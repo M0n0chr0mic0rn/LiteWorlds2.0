@@ -1,6 +1,6 @@
 # LiteWorlds2.0
 
-Litecoin Web2 API for Litecoin
+Litecoin Web2 API (Omnilite & MWEB)
 
 Used Packages
 
