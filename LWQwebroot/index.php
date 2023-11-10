@@ -22,21 +22,24 @@ if (!isset($_GET["method"])) {
         header('Access-Control-Allow-Origin:*');
 
         // prepare the return object
-        $return = (object)array();
+        $RETURN = (object)array();
 
         // Include the Libarys
+        // COUNTER
+        require_once("../LWQscripts/maria-counter.php");
+        $COUNTER = new Counter;
+
         // USER
-        require_once("../scripts/maria-user.php");
+        require_once("../LWQscripts/maria-user.php");
         $USER = new User;
 
         // OMNILITE
-        require_once("../scripts/maria-omni.php");
-        $OMNI = new Omni;
-
+        require_once("../LWQscripts/maria-omni.php");
+        $OMNILITE = new Omnilite;
 
         // Call the header files
-        include("../scripts/public.php");
-        include("../scripts/user.php");
-        include("../scripts/omni.php");
+        include("../LWQscripts/public.php");
+        include("../LWQscripts/user.php");
+        include("../LWQscripts/omni.php");
     }
 }
