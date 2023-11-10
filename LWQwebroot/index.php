@@ -3,8 +3,8 @@
 LiteWorlds2.0
 The redefined and fully commented Version
 
-The Folder webroot is the access-point for the webserver, it should point to index.php (this file)
-The Folder scripts contains access data for the Database and the Litecoin Node, that's why it is outside of the webroot!
+The Folder LWQwebroot is the access-point for the webserver, it should point to index.php (this file)
+The Folder LWQscripts contains access data for the Database and the Litecoin Node, that's why it is outside of the LWQwebroot!
 Also be sure to whitelist the Server IP on the Litecoin Node if you run it on a seperated device, otherwise whitelist localhost
 */
 
