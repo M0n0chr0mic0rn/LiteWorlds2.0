@@ -8,7 +8,7 @@ if ($_GET["method"] == "user")
     $COUNTER->increase($_GET["method"]);
 
     // create the RETURN object
-    $RETURN->answer = "Here are the public commands.";
+    $RETURN->answer = "Here are the user commands.";
     $RETURN->bool = true;
     $RETURN->commands = array("user-register"=>"Prepares a register action");
 
