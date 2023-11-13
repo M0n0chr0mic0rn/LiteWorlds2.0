@@ -58,6 +58,7 @@ if ($_GET["method"] == "user-register")
         
         echo json_encode($RETURN, JSON_PRETTY_PRINT);
     }
+    die();
 }
 
 if ($_GET["method"] == "user-execute")
@@ -69,4 +70,5 @@ if ($_GET["method"] == "user-execute")
     {
         echo $USER->execute($_GET["action"], $_GET["copper"], $_GET["jade"], $_GET["crystal"], $IP);
     }
+    die();
 }

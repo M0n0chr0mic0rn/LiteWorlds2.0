@@ -14,6 +14,7 @@ if ($_GET["method"] == "public")
 
     // print the RETURN as JSON
     echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    die();
 }
 
 if ($_GET["method"] == "hello" || $_GET["method"] == "public-hello")
@@ -26,4 +27,5 @@ if ($_GET["method"] == "hello" || $_GET["method"] == "public-hello")
 
     // call the hello function from the User Class and print it as JSON
     echo json_encode($USER->hello($RETURN), JSON_PRETTY_PRINT);
+    die();
 }
