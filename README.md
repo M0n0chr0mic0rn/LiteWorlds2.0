@@ -12,5 +12,5 @@ Used Packages
 - php-mysql
 - php-curl
 - php-gnupg
-- Litecoin Core
-- Litecoin Omnilite
+- Litecoin Core v21
+- Litecoin Omnilite v18
