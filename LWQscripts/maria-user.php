@@ -77,64 +77,73 @@ class User
     {
         if ($action == "register")
         {
-            //var_dump($action, $copper, $jade, $crystal, $IP);
             $status = 0;
 
             // get user data
-            $stmt = self::$_db->prepare("SELECT * FROM register WHERE BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal AND Status=:status AND IP=:IP LIMIT 1");
+            $stmt = self::$_db->prepare("SELECT * FROM register WHERE BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal AND Status=:status LIMIT 1");
             $stmt->bindParam(":copper", $copper);
             $stmt->bindParam(":jade", $jade);
             $stmt->bindParam(":crystal", $crystal);
             $stmt->bindParam(":status", $status);
-            $stmt->bindParam(":IP", $IP);
             $stmt->execute();
-
-            //var_dump($stmt->fetchAll(PDO::FETCH_ASSOC));
-            //return false;
 
             if($stmt->rowCount() == 1)
             {
                 // create Account
                 $data = (object)$stmt->fetchAll(PDO::FETCH_ASSOC)[0];
-                $time = time();
 
-                $stmt = self::$_db->prepare("INSERT INTO user (User, Mail, Pass, CreateTime, CreateIP) VALUES (:user, :mail, :pass, :createTime, :ip)");
-                $stmt->bindParam(":user", $data->User);
-                $stmt->bindParam(":mail", $data->Mail);
-                $stmt->bindParam(":pass", $data->Pass);
-                $stmt->bindParam(":createTime", $time);
-                $stmt->bindParam(":ip", $IP);
-                $stmt->execute();
-
-                if($stmt->rowCount() == 1)
+                if ($data->IP == $IP)
                 {
-                    // Set Memory Table to solved
-                    $time = time() + 60;
-                    $status = 1;
+                    $time = time();
 
-                    $stmt = self::$_db->prepare("UPDATE register SET Time=:time, Status=:status WHERE User=:user");
-                    $stmt->bindParam(":time", $time);
-                    $stmt->bindParam(":status", $status);
+                    $stmt = self::$_db->prepare("INSERT INTO user (User, Mail, Pass, CreateTime, CreateIP) VALUES (:user, :mail, :pass, :createTime, :ip)");
                     $stmt->bindParam(":user", $data->User);
+                    $stmt->bindParam(":mail", $data->Mail);
+                    $stmt->bindParam(":pass", $data->Pass);
+                    $stmt->bindParam(":createTime", $time);
+                    $stmt->bindParam(":ip", $IP);
                     $stmt->execute();
 
-                    // return success page
-                    $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
-                            <img src=\"https://v2.liteworlds.quest/icon.png\">
-                            <h1>Your Account has been succesfully created</h1>
-                            <script>setTimeout(function(){window.close()}, 10000)</script>";
+                    if($stmt->rowCount() == 1)
+                    {
+                        // Set Memory Table to solved
+                        $time = time() + 60;
+                        $status = 1;
 
-                    return $page;
+                        $stmt = self::$_db->prepare("UPDATE register SET Time=:time, Status=:status WHERE User=:user");
+                        $stmt->bindParam(":time", $time);
+                        $stmt->bindParam(":status", $status);
+                        $stmt->bindParam(":user", $data->User);
+                        $stmt->execute();
+
+                        // return success page
+                        $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
+                                <img src=\"https://v2.liteworlds.quest/icon.png\">
+                                <h1>Your Account has been succesfully created</h1>
+                                <script>setTimeout(function(){window.close()}, 10000)</script>";
+
+                        return $page;
+                    }
+                    else
+                    {
+                        // return fail page
+                        $page = "<body style=\"background-color: black; color: crimson; text-align: center;\">
+                                <img src=\"https://v2.liteworlds.quest/icon.png\">
+                                <h1>Internal Database write error</h1>";
+
+                        return $page;
+                    }
                 }
                 else
                 {
                     // return fail page
                     $page = "<body style=\"background-color: black; color: crimson; text-align: center;\">
                             <img src=\"https://v2.liteworlds.quest/icon.png\">
-                            <h1>Internal Database write error</h1>";
+                            <h1>Internal IP conflict, please sign the register process from the IP it was made from</h1>";
 
                     return $page;
                 }
+                
             }
             else
             {
