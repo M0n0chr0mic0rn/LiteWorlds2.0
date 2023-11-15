@@ -619,10 +619,10 @@ class User
         
     }
 
-    function GET($authkey)
+    function _get($authkey)
     {
         // This function is for internal use only!
-        
+
         // get all user data
         $stmt = self::$_db->prepare("SELECT * FROM user WHERE BINARY AuthKey=:authkey LIMIT 1");
         $stmt->bindParam(":authkey", $authkey);
