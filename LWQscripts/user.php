@@ -33,7 +33,7 @@ if ($_GET["method"] == "user-register")
             if (isset($_GET["mail"]))
             {
                 // run the register function
-                echo json_encode($USER->register($RETURN, $_GET["user"], $_GET["pass"], $_GET["mail"], $IP));
+                echo json_encode($USER->register($RETURN, $_GET["user"], $_GET["pass"], $_GET["mail"], $IP), JSON_PRETTY_PRINT);
             }
             else
             {
@@ -42,6 +42,40 @@ if ($_GET["method"] == "user-register")
         
                 echo json_encode($RETURN, JSON_PRETTY_PRINT);
             }
+        }
+        else
+        {
+            $RETURN->answer = "Parameter \"pass\" is missing";
+            $RETURN->bool = false;
+        
+            echo json_encode($RETURN, JSON_PRETTY_PRINT);
+        }
+    }
+    else
+    {
+        $RETURN->answer = "Parameter \"user\" is missing";
+        $RETURN->bool = false;
+        
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    }
+    die();
+}
+
+if ($_GET["method"] == "user-login")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    // check all parameters are given
+    if (isset($_GET["user"]))
+    {
+        if (isset($_GET["pass"]))
+        {
+            // run the login function
+            echo json_encode($USER->login($RETURN, $_GET["user"], $_GET["pass"], $IP), JSON_PRETTY_PRINT);
         }
         else
         {
