@@ -26,6 +26,18 @@ class User
         }
     }
 
+    private function _LASTACTION($authkey)
+    {
+        // get unix time
+        $time = time();
+
+        // update last request timestamp
+        $stmt = self::$_db->prepare("UPDATE user SET LastAction=:lastAction WHERE AuthKey=:authkey LIMIT 1");
+        $stmt->bindParam(":lastAction", $time);
+        $stmt->bindParam(":authkey", $authkey);
+        $stmt->execute();
+    }
+
     function hello($RETURN, $IP)
     {
         // The "Hello World" Example
@@ -159,7 +171,7 @@ class User
 
         if ($action == 'login')
         {
-            // grep user data
+            // get user data
             $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal");
             $stmt->bindParam(":copper", $copper);
             $stmt->bindParam(":jade", $jade);
@@ -174,6 +186,7 @@ class User
                 {
                     // login the user
                     $time = time();
+
                     $stmt = self::$_db->prepare("UPDATE user SET AuthKey=:authkey, LastAction=:lastAction, LastIP=:lastIP WHERE User=:user");
                     $stmt->bindParam(":authkey", $data->AuthKey);
                     $stmt->bindParam(":lastAction", $time);
@@ -559,5 +572,74 @@ class User
             $RETURN->answer = "Waiting for E-mail Confirmation";
             return $RETURN;
         }
+    }
+
+    function get($RETURN, $authkey, $IP)
+    {
+        // get the public user data
+        $stmt = self::$_db->prepare("SELECT User, Language, CreateTime, kotia_faucet, core_faucet, LastAction, LastIP FROM user WHERE BINARY AuthKey=:authkey LIMIT 1");
+        $stmt->bindParam(":authkey", $authkey);
+        $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // check IP is the same as login IP
+        if ($array[0]["LastIP"] == $IP)
+        {
+            // check we found a entry
+            if (count($array) > 0)
+            {
+                // update timestamp of last action/request
+                self::_LASTACTION($authkey);
+
+                // prepare and return the success object
+                $RETURN->answer = "I found this data with the given AuthKey";
+                $RETURN->bool = true;
+                $RETURN->data = (object)$array[0];
+
+                return $RETURN;
+            }
+            else
+            {
+                // prepare and return a fail message
+                $RETURN->answer = "I found no data with the given AuthKey";
+                $RETURN->bool = false;
+
+                return $RETURN;
+            }
+        }
+        else
+        {
+            // prepare and retrun a IP fail message
+            $RETURN->answer = "Internal IP conflict, only the IP from last login is able to receive this data";
+            $RETURN->bool = false;
+
+            return $RETURN;
+        }
+
+        
+    }
+
+    function GET($authkey)
+    {
+        // This function is for internal use only!
+        
+        // get all user data
+        $stmt = self::$_db->prepare("SELECT * FROM user WHERE BINARY AuthKey=:authkey LIMIT 1");
+        $stmt->bindParam(":authkey", $authkey);
+        $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // check we found an entry
+        if (count($array) > 0)
+        {
+            // return the full user data
+            return (object)$array[0];
+        }
+        else
+        {
+            return false;
+        }
+
+        // when we go into an if with this result we have either false or an object (object counts as true)
     }
 }

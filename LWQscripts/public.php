@@ -26,6 +26,6 @@ if ($_GET["method"] == "hello" || $_GET["method"] == "public-hello")
     $COUNTER->increase($_GET["method"]);
 
     // call the hello function from the User Class and print it as JSON
-    echo json_encode($USER->hello($RETURN), JSON_PRETTY_PRINT);
+    echo json_encode($USER->hello($RETURN, $IP), JSON_PRETTY_PRINT);
     die();
 }

@@ -10,10 +10,26 @@ if ($_GET["method"] == "user")
     // create the RETURN object
     $RETURN->answer = "Here are the user commands.";
     $RETURN->bool = true;
-    $RETURN->commands = array("user-register"=>"Prepares a register action");
+    $RETURN->commands = array(
+        "user-register"=>"Prepares a register action", 
+        "user-login"=>"Prepares a login action", 
+        "user-get"=>"Get public user data"
+    );
 
     // print the RETURN as JSON
     echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    die();
+}
+
+if ($_GET["method"] == "user-execute")
+{
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    if (isset($_GET["action"]) && isset($_GET["copper"]) && isset($_GET["jade"]) && isset($_GET["crystal"]))
+    {
+        echo $USER->execute($_GET["action"], $_GET["copper"], $_GET["jade"], $_GET["crystal"], $IP);
+    }
     die();
 }
 
@@ -95,14 +111,26 @@ if ($_GET["method"] == "user-login")
     die();
 }
 
-if ($_GET["method"] == "user-execute")
+if ($_GET["method"] == "user-get")
 {
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
     // increase the method counter
     $COUNTER->increase($_GET["method"]);
 
-    if (isset($_GET["action"]) && isset($_GET["copper"]) && isset($_GET["jade"]) && isset($_GET["crystal"]))
+    // check all parameters are given
+    if (isset($_GET["authkey"]))
     {
-        echo $USER->execute($_GET["action"], $_GET["copper"], $_GET["jade"], $_GET["crystal"], $IP);
+        // run the get function
+        echo json_encode($USER->get($RETURN, $_GET["authkey"], $IP), JSON_PRETTY_PRINT);
+    }
+    else
+    {
+        $RETURN->answer = "Parameter \"authkey\" is missing";
+        $RETURN->bool = false;
+        
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
     }
     die();
 }
