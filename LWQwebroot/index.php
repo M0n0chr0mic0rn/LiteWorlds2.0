@@ -14,7 +14,7 @@ if (!isset($_GET["method"]))
 {
     // if not we call the website
     include("./index.html");
-    exit();
+    die();
 } 
 else 
 {
@@ -36,6 +36,41 @@ else
         // grep request IP
         $IP = $_SERVER["REMOTE_ADDR"];
 
+        // AuthKey Security
+        if (isset($_GET["authkey"]))
+        {
+            if (!is_null($_GET["authkey"]))
+            {
+                if ($_GET["authkey"] === preg_replace( "/[^a-zA-Z0-9]/", "", $_GET["authkey"]))
+                {
+                    // define AUTHKEY
+                    $AUTHKEY = $_GET["authkey"];
+                }
+                else
+                {
+                    $RETURN->answer = "Parameter \"authkey\" cant contain special characters";
+                    $RETURN->bool = false;
+
+                    // set Content Type to JSON
+                    header("Content-type: application/json; charset=utf-8");
+
+                    echo json_encode($RETURN, JSON_PRETTY_PRINT);
+                    die();
+                }
+            }
+            else
+            {
+                $RETURN->answer = "Parameter \"authkey\" cant be NULL";
+                $RETURN->bool = false;
+
+                // set Content Type to JSON
+                header("Content-type: application/json; charset=utf-8");
+
+                echo json_encode($RETURN, JSON_PRETTY_PRINT);
+                die();
+            }
+        }
+
         // Include the Libarys
         // COUNTER
         require_once("../LWQscripts/maria-counter.php");
@@ -46,12 +81,12 @@ else
         $USER = new User;
 
         // OMNILITE
-        require_once("../LWQscripts/maria-omni.php");
+        require_once("../LWQscripts/maria-omnilite.php");
         $OMNILITE = new Omnilite;
 
         // Call the header files
         include("../LWQscripts/public.php");
         include("../LWQscripts/user.php");
-        include("../LWQscripts/omni.php");
+        include("../LWQscripts/omnilite.php");
     }
 }

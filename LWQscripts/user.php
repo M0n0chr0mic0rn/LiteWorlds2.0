@@ -111,6 +111,30 @@ if ($_GET["method"] == "user-login")
     die();
 }
 
+if ($_GET["method"] == "user-logout")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    // check all parameters are given
+    if (isset($_GET["authkey"]))
+    {
+        // run the login function
+        echo json_encode($USER->logout($RETURN, $AUTHKEY, $IP), JSON_PRETTY_PRINT);
+    }
+    else
+    {
+        $RETURN->answer = "Parameter \"authkey\" is missing";
+        $RETURN->bool = false;
+        
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    }
+    die();
+}
+
 if ($_GET["method"] == "user-get")
 {
     // set Content Type to JSON
@@ -123,7 +147,7 @@ if ($_GET["method"] == "user-get")
     if (isset($_GET["authkey"]))
     {
         // run the get function
-        echo json_encode($USER->get($RETURN, $_GET["authkey"], $IP), JSON_PRETTY_PRINT);
+        echo json_encode($USER->get($RETURN, $AUTHKEY, $IP), JSON_PRETTY_PRINT);
     }
     else
     {

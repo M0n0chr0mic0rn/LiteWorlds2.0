@@ -574,6 +574,61 @@ class User
         }
     }
 
+    function logout($RETURN, $authkey, $IP)
+    {
+        // get user data
+        $data = self::_get($authkey);
+
+        // if we found data
+        if ($data)
+        {
+            // and if the request IP match
+            if ($data->LastIP == $IP) {
+                // create a NULL var
+                $empty = NULL;
+
+                // set AuthKey NULL
+                $stmt = self::$_db->prepare("UPDATE user SET AuthKey=:_empty WHERE BINARY Authkey=:authkey LIMIT 1");
+                $stmt->bindParam(":_empty", $empty);
+                $stmt->bindParam(":authkey", $authkey);
+                $stmt->execute();
+
+                if ($stmt->rowCount() > 0)
+                {
+                    // prepare and return success message
+                    $RETURN->answer = "Logout successfully";
+                    $RETURN->bool = true;
+
+                    return $RETURN;
+                }
+                else
+                {
+                    // prepare and return fail message
+                    $RETURN->answer = "Internal Database Error, logout failed";
+                    $RETURN->bool = false;
+
+                    return $RETURN;
+                }
+            }
+            else
+            {
+                // prepare and retrun a IP fail message
+                $RETURN->answer = "Internal IP Conflict, only the IP from last login is able to receive this data";
+                $RETURN->bool = false;
+
+                return $RETURN;
+            }
+        }
+        else
+        {
+            // prepare and return fail message
+            $RETURN->answer = "Invalid AuthKey, logout failed";
+            $RETURN->bool = false;
+
+            return $RETURN;
+        }
+    }
+
     function get($RETURN, $authkey, $IP)
     {
         // get the public user data
@@ -582,11 +637,11 @@ class User
         $stmt->execute();
         $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // check IP is the same as login IP
-        if ($array[0]["LastIP"] == $IP)
+        // check we found a entry
+        if (count($array) > 0)
         {
-            // check we found a entry
-            if (count($array) > 0)
+            // check IP is the same as login IP
+            if ($array[0]["LastIP"] == $IP)
             {
                 // update timestamp of last action/request
                 self::_LASTACTION($authkey);
@@ -600,23 +655,22 @@ class User
             }
             else
             {
-                // prepare and return a fail message
-                $RETURN->answer = "I found no data with the given AuthKey";
+                // prepare and retrun a IP fail message
+                $RETURN->answer = "Internal IP Conflict, only the IP from last login is able to receive this data";
                 $RETURN->bool = false;
 
                 return $RETURN;
             }
+            
         }
         else
         {
-            // prepare and retrun a IP fail message
-            $RETURN->answer = "Internal IP conflict, only the IP from last login is able to receive this data";
+            // prepare and return a fail message
+            $RETURN->answer = "I found no data with the given AuthKey";
             $RETURN->bool = false;
 
             return $RETURN;
         }
-
-        
     }
 
     function _get($authkey)
