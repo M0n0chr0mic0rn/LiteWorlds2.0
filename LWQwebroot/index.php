@@ -28,7 +28,9 @@ else
         // Allow Cross Origin
         header("Access-Control-Allow-Origin:*");
 
-        // prepare the return object
+        // prepare the RETURN object
+        // the RETURN object will be lead tthrow the whole process and is in the end the final JSON output
+        // (immitate a call by referece function)
         $RETURN = (object)array();
 
         // grep request IP
