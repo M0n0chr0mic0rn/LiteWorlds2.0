@@ -33,6 +33,27 @@ if ($_GET["method"] == "user-execute")
     die();
 }
 
+if ($_GET["method"] == "user-iplock")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    if (isset($AUTHKEY)) {
+        // run the register function
+        echo json_encode($USER->iplock($RETURN, $AUTHKEY, $IP), JSON_PRETTY_PRINT);
+    }
+    else
+    {
+        $RETURN->answer = "Parameter \"authkey\" is missing";
+        $RETURN->bool = false;
+        
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    } 
+}
+
 if ($_GET["method"] == "user-register")
 {
     // set Content Type to JSON
