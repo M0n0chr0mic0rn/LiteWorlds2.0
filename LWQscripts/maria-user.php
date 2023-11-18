@@ -172,7 +172,7 @@ class User
         if ($action == 'login')
         {
             // get user data
-            $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal");
+            $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal LIMIT 1");
             $stmt->bindParam(":copper", $copper);
             $stmt->bindParam(":jade", $jade);
             $stmt->bindParam(":crystal", $crystal);
@@ -206,6 +206,90 @@ class User
                             <script>setTimeout(function(){window.close()}, 5000)</script>";
 
                     return $page;
+                }
+                else
+                {
+                    // return fail page
+                    $page = "<body style=\"background-color: black; color: crimson; text-align: center;\">
+                            <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                            <h1>Internal IP conflict, please sign the login process from the IP it was made from</h1>";
+
+                    return $page;
+                }
+                
+            }
+            else
+            {
+                // return fail page
+                $page = "<body style=\"background-color: black; color: crimson; text-align: center;\">
+                        <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                        <h1>Action not found in database</h1>
+                        </body>";
+
+                return $page;
+            }
+        }
+
+        if ($action == "changemail") {
+            // get user data
+            $stmt = self::$_db->prepare("SELECT * FROM data_change WHERE BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal LIMIT 1");
+            $stmt->bindParam(":copper", $copper);
+            $stmt->bindParam(":jade", $jade);
+            $stmt->bindParam(":crystal", $crystal);
+            $stmt->execute();
+
+            if($stmt->rowCount() == 1)
+            {
+                $data = (object)$stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+
+                if ($data->IP == $IP)
+                {
+                    if ($data->Progress < 2)
+                    {
+                        // update the timestamp and the progress value
+                        $time = time() + 120;
+                        $progress = $data->Progress + 1;
+
+                        $stmt = self::$_db->prepare("UPDATE data_change SET Time=:time, Progress=:progress WHERE BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal LIMIT 1");
+                        $stmt->bindParam(":time", $time);
+                        $stmt->bindParam(":progress", $progress);
+                        $stmt->bindParam(":copper", $copper);
+                        $stmt->bindParam(":jade", $jade);
+                        $stmt->bindParam(":crystal", $crystal);
+                        $stmt->execute();
+
+                        if ($progress == 1)
+                        {
+                            // return success page
+                            $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
+                            <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                            <h1>Step 1 has been made, now confirm the action from the second Email address</h1>
+                            <script>setTimeout(function(){window.close()}, 5000)</script>";
+
+                            return $page;
+                        }
+
+                        if ($progress == 2)
+                        {
+                            // return success page
+                            $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
+                            <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                            <h1>Step 2 has been made, the change will be applied in less then 3min</h1>
+                            <script>setTimeout(function(){window.close()}, 5000)</script>";
+
+                            return $page;
+                        }
+                    }
+                    else
+                    {
+                        // return success page
+                        $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
+                        <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                        <h1>The sign progress is already done, the change will be applied in less then 3min</h1>
+                        <script>setTimeout(function(){window.close()}, 5000)</script>";
+
+                        return $page;
+                    }
                 }
                 else
                 {
@@ -289,14 +373,14 @@ class User
         $stmt->execute();
         $mail_register = $stmt->rowCount();
 
-        $stmt = self::$_db->prepare("SELECT * FROM mail WHERE Mail=:mail LIMIT 1");
+        $stmt = self::$_db->prepare("SELECT * FROM data_change WHERE Mail=:mail LIMIT 1");
         $stmt->bindParam(":mail", $mail);
         $stmt->execute();
         $mail_mail = $stmt->rowCount();
 
         if ($mail_user > 0 || $mail_register > 0 || $mail_mail > 0)
         {
-            $RETURN->answer = "Mail is allready taken";
+            $RETURN->answer = "Email address is allready taken";
             $RETURN->bool = false;
             return $RETURN;
         }
@@ -559,7 +643,7 @@ class User
                 // send the mail
                 mail($mail, $betreff, $nachricht, $header);
 
-                // setup RETURN success object
+                // prepare and return success object
                 $RETURN->answer = "Your Login have been prepared, please sign your action via Email";
                 $RETURN->bool = true;
                 $RETURN->AuthKey = $authkey;
@@ -696,4 +780,170 @@ class User
 
         // when we go into an if with this result we have either false or an object (object counts as true)
     }
+
+    function changeMail($RETURN, $authkey, $mail, $IP)
+    {
+        // check mail availability
+        $stmt = self::$_db->prepare("SELECT * FROM user WHERE Mail=:mail LIMIT 1");
+        $stmt->bindParam(":mail", $mail);
+        $stmt->execute();
+        $mail_user = $stmt->rowCount();
+        
+        $stmt = self::$_db->prepare("SELECT * FROM register WHERE Mail=:mail LIMIT 1");
+        $stmt->bindParam(":mail", $mail);
+        $stmt->execute();
+        $mail_register = $stmt->rowCount();
+
+        $stmt = self::$_db->prepare("SELECT * FROM data_change WHERE Mail=:mail LIMIT 1");
+        $stmt->bindParam(":mail", $mail);
+        $stmt->execute();
+        $mail_mail = $stmt->rowCount();
+
+        if ($mail_user > 0 || $mail_register > 0 || $mail_mail > 0)
+        {
+            $RETURN->answer = "Email address is allready taken";
+            $RETURN->bool = false;
+            return $RETURN;
+        }
+
+        // get user data
+        $data = self::_get($authkey);
+
+        // if we found data
+        if ($data)
+        {
+            // and if the request IP match
+            if ($data->LastIP == $IP) {
+                // generate the keys for signing
+                $done = false;
+                $key = new Key;
+
+                do
+                {
+                    $keys = $key->Craft2FA();
+
+                    $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:copper OR BINARY Jade=:copper OR BINARY Crystal=:copper LIMIT 1");
+                    $stmt->bindParam(":copper", $keys->copper);
+                    $stmt->execute();
+
+                    if ($stmt->rowCount() == 0)
+                    {
+                        $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:jade OR BINARY Jade=:jade OR BINARY Crystal=:jade LIMIT 1");
+                        $stmt->bindParam(":jade", $keys->jade);
+                        $stmt->execute();
+
+                        if ($stmt->rowCount() == 0)
+                        {
+                            $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:crystal OR BINARY Jade=:crystal OR BINARY Crystal=:crystal LIMIT 1");
+                            $stmt->bindParam(":crystal", $keys->crystal);
+                            $stmt->execute();
+                            if ($stmt->rowCount() == 0)
+                            {
+                                $done = true;
+                            }
+                        }
+                    }
+                }
+                while (!$done);
+
+                // insert into memory table
+                $time = time() + 120;
+
+                $stmt = self::$_db->prepare("INSERT INTO data_change (User, Mail, Pass, Language, Copper, Jade, Crystal, IP, Time) VALUES (:user, :mail, :pass, :language, :copper, :jade, :crystal, :ip, :time)");
+                $stmt->bindParam(":user", $data->User);
+                $stmt->bindParam(":mail", $mail);
+                $stmt->bindParam(":pass", $data->Pass);
+                $stmt->bindParam(":language", $data->Language);
+                $stmt->bindParam(":copper", $keys->copper);
+                $stmt->bindParam(":jade", $keys->jade);
+                $stmt->bindParam(":crystal", $keys->crystal);
+                $stmt->bindParam(":ip", $IP);
+                $stmt->bindParam(":time", $time);
+                $stmt->execute();
+
+                if ($stmt->rowCount() > 0)
+                {
+                    // send mail for verfication
+                    $betreff = "Sign your change Email action on LiteWorlds.quest Network";
+
+                    // message
+                    $link = "https://v2.liteworlds.quest/?method=user-execute&action=changemail&copper=".$keys->copper."&jade=".$keys->jade."&crystal=".$keys->crystal;
+                    $nachricht = "
+                    <html>
+                        <body style=\"background-color: black; color: deepskyblue;\">
+                        <table align=\"center\">
+                        <tr>
+                            <td><img src=\"https://v2.liteworlds.quest/LWLA.png\" style=\"height:250px; margin-left:auto; margin-right:auto; display:block;\"></td>
+                        </tr>
+
+                        <tr>
+                            <td><p align=\"center\" style=\"color:deepskyblue;\">You are going to change the email address of your Account at LiteWorlds</p></td>
+                        </tr>
+                        <tr>
+                            <td><p align=\"center\" style=\"color:deepskyblue;\">User: ".$data->User."</p></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <p align=\"center\" style=\"color:crimson;\">Please sign your Action</p>
+                                <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"".$link."\">
+                                    <button style=\"font-size:24px;width:100%;color:deepskyblue;background-color:transparent;cursor:crosshair;border:3px solid deepskyblue;border-radius:7px;\">SIGN</button>
+                                </a>
+                                <p align=\"center\" style=\"color:crimson;\">Time: ".time()."</p>
+                            </td>
+                        </tr>
+                        </table>
+                        </body>
+                    </html>
+                    ";
+
+                    $header = 
+                        "From: Security <security@liteworlds.quest>" . "\r\n" .
+                        "Reply-To: Security <security@liteworlds.quest>" . "\r\n" .
+                        "MIME-Version: 1.0" . "\r\n" .
+                        "Content-type: text/html; charset=iso-8859-1" . "\r\n" .
+                        "X-Mailer: PHP/" . phpversion();
+
+                    // send the mail to the old Email address
+                    mail($data->Mail, $betreff, $nachricht, $header);
+
+                    // send the mail to the new Email address
+                    mail($mail, $betreff, $nachricht, $header);
+
+                    // prepare and return success message
+                    $RETURN->answer = "Email change successfully prepared, sign this action via both Email addresses";
+                    $RETURN->bool = true;
+
+                    return $RETURN;
+                }
+                else
+                {
+                    // prepare and return fail message
+                    $RETURN->answer = "Internal Database Error, Email change failed";
+                    $RETURN->bool = false;
+
+                    return $RETURN;
+                }
+            }
+            else
+            {
+                // prepare and retrun a IP fail message
+                $RETURN->answer = "Internal IP Conflict, only the IP from last login is able to sign this action";
+                $RETURN->bool = false;
+
+                return $RETURN;
+            }
+        }
+        else
+        {
+            // prepare and return fail message
+            $RETURN->answer = "Invalid AuthKey, logout failed";
+            $RETURN->bool = false;
+
+            return $RETURN;
+        }
+    }
+    // change mail
+    // change password
+    // password recovery
+    // paired p2sh Address
 }

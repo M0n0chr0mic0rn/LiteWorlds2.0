@@ -158,3 +158,38 @@ if ($_GET["method"] == "user-get")
     }
     die();
 }
+
+if ($_GET["method"] == "user-change-mail")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    // check all parameters are given
+    if (isset($_GET["authkey"]))
+    {
+        if (isset($_GET["mail"]))
+        {
+            // run the change mail function
+            echo json_encode($USER->changeMail($RETURN, $AUTHKEY, $_GET["mail"], $IP), JSON_PRETTY_PRINT);
+        }
+        else
+        {
+            $RETURN->answer = "Parameter \"mail\" is missing";
+            $RETURN->bool = false;
+            
+            echo json_encode($RETURN, JSON_PRETTY_PRINT);
+        }
+        
+    }
+    else
+    {
+        $RETURN->answer = "Parameter \"authkey\" is missing";
+        $RETURN->bool = false;
+        
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    }
+    die();
+}
