@@ -951,7 +951,7 @@ class User
     function get($RETURN, $authkey, $IP)
     {
         // get the public user data
-        $stmt = self::$_db->prepare("SELECT User, Language, CreateTime, kotia_faucet, core_faucet, LastAction, LastIP FROM user WHERE BINARY AuthKey=:authkey LIMIT 1");
+        $stmt = self::$_db->prepare("SELECT User, Language, CreateTime, kotia_faucet, core_faucet, LastAction, LastIP, IPlock FROM user WHERE BINARY AuthKey=:authkey LIMIT 1");
         $stmt->bindParam(":authkey", $authkey);
         $stmt->execute();
         $array = $stmt->fetchAll(PDO::FETCH_ASSOC);

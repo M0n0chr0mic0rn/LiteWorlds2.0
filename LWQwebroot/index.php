@@ -76,6 +76,10 @@ else
         require_once("../LWQscripts/maria-counter.php");
         $COUNTER = new Counter;
 
+        // PUBLIC
+        require_once("../LWQscripts/node-data.php");
+        $PUBLIC = new NodeData;
+
         // USER
         require_once("../LWQscripts/maria-user.php");
         $USER = new User;
