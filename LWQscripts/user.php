@@ -11,9 +11,14 @@ if ($_GET["method"] == "user")
     $RETURN->answer = "Here are the user commands.";
     $RETURN->bool = true;
     $RETURN->commands = array(
-        "user-register"=>"Prepares a register action", 
-        "user-login"=>"Prepares a login action", 
-        "user-get"=>"Get public user data"
+        "user-execute"=>"Sign a prepared action",
+        "user-iplock"=>"Turn on/off the IP lock, always IP locked",
+        "user-register"=>"Prepares a register action, always IP locked",
+        "user-login"=>"Prepares a login action",
+        "user-logout"=>"Logout the user and delete its authkey from database, no sign needed, always IP locked",
+        "user-get"=>"Get public user data",
+        "user-change-mail"=>"Prepares a mail change action, need to be signed from both Emails",
+        "user-change-pass"=>"Prepares a pass change action"
     );
 
     // print the RETURN as JSON
@@ -199,6 +204,41 @@ if ($_GET["method"] == "user-change-mail")
         else
         {
             $RETURN->answer = "Parameter \"mail\" is missing";
+            $RETURN->bool = false;
+            
+            echo json_encode($RETURN, JSON_PRETTY_PRINT);
+        }
+        
+    }
+    else
+    {
+        $RETURN->answer = "Parameter \"authkey\" is missing";
+        $RETURN->bool = false;
+        
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    }
+    die();
+}
+
+if ($_GET["method"] == "user-change-pass")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    // check all parameters are given
+    if (isset($_GET["authkey"]))
+    {
+        if (isset($_GET["pass"]))
+        {
+            // run the change pass function
+            echo json_encode($USER->changePass($RETURN, $AUTHKEY, $_GET["pass"], $IP), JSON_PRETTY_PRINT);
+        }
+        else
+        {
+            $RETURN->answer = "Parameter \"pass\" is missing";
             $RETURN->bool = false;
             
             echo json_encode($RETURN, JSON_PRETTY_PRINT);

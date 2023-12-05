@@ -324,7 +324,7 @@ class User
             {
                 $data = (object)$stmt->fetchAll(PDO::FETCH_ASSOC)[0];
 
-                if ($data->IP == $IP)
+                if ($data->IP == "0.0.0.0")
                 {
                     if ($data->Progress < 2)
                     {
@@ -342,21 +342,112 @@ class User
 
                         if ($progress == 1)
                         {
-                            // return success page
-                            $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
-                            <img src=\"https://v2.liteworlds.quest/LWLA.png\">
-                            <h1>Step 1 has been made, now confirm the action from the second Email address</h1>
-                            <script>setTimeout(function(){window.close()}, 5000)</script>";
+                            if ($stmt->errorInfo()[0] == "00000")
+                            {
+                                // return success page
+                                $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
+                                <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                                <h1>Step 1 has been made, now confirm the action from the second Email address</h1>
+                                <script>setTimeout(function(){window.close()}, 5000)</script>";
 
-                            return $page;
+                                return $page;
+                            }
+                            else
+                            {
+                                // return fail page
+                                $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
+                                <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                                <h1>Internal write error, try again. Should it happen again please get in contact with us</h1>
+                                <script>setTimeout(function(){window.close()}, 5000)</script>";
+
+                                return $page;
+                            }
                         }
 
                         if ($progress == 2)
                         {
+                            // write new Email to user
+                            $stmt = self::$_db->prepare("UPDATE user SET Mail=:mail WHERE BINARY User=:user LIMIT 1");
+                            $stmt->bindParam(":mail", $data->Mail);
+                            $stmt->bindParam(":user", $data->User);
+                            $stmt->execute();
+
+                            if ($stmt->errorInfo()[0] == "00000")
+                            {
+                                // delete from table change_data
+                                $stmt = self::$_db->prepare("DELETE FROM data_change WHERE BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal LIMIT 1");
+                                $stmt->bindParam(":copper", $copper);
+                                $stmt->bindParam(":jade", $jade);
+                                $stmt->bindParam(":crystal", $crystal);
+                                $stmt->execute();
+
+                                // return success page
+                                $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
+                                <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                                <h1>Step 2 has been made, the change has been applied</h1>
+                                <script>setTimeout(function(){window.close()}, 5000)</script>";
+
+                                return $page;
+                            }
+                            else
+                            {
+                                // return fail page
+                                $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
+                                <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                                <h1>Internal write error, try again. Should it happen again please get in contact with us</h1>
+                                <script>setTimeout(function(){window.close()}, 5000)</script>";
+
+                                return $page;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if ($data->IP == $IP)
+                    {
+                        if ($data->Progress < 2)
+                        {
+                            // update the timestamp and the progress value
+                            $time = time() + 120;
+                            $progress = $data->Progress + 1;
+
+                            $stmt = self::$_db->prepare("UPDATE data_change SET Time=:time, Progress=:progress WHERE BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal LIMIT 1");
+                            $stmt->bindParam(":time", $time);
+                            $stmt->bindParam(":progress", $progress);
+                            $stmt->bindParam(":copper", $copper);
+                            $stmt->bindParam(":jade", $jade);
+                            $stmt->bindParam(":crystal", $crystal);
+                            $stmt->execute();
+
+                            if ($progress == 1)
+                            {
+                                // return success page
+                                $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
+                                <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                                <h1>Step 1 has been made, now confirm the action from the second Email address</h1>
+                                <script>setTimeout(function(){window.close()}, 5000)</script>";
+
+                                return $page;
+                            }
+
+                            if ($progress == 2)
+                            {
+                                // return success page
+                                $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
+                                <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                                <h1>Step 2 has been made, the change will be applied in less then 1min</h1>
+                                <script>setTimeout(function(){window.close()}, 5000)</script>";
+
+                                return $page;
+                            }
+                        }
+                        else
+                        {
                             // return success page
                             $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
                             <img src=\"https://v2.liteworlds.quest/LWLA.png\">
-                            <h1>Step 2 has been made, the change will be applied in less then 1min</h1>
+                            <h1>The sign progress is already done, the change will be applied in less then 1min</h1>
                             <script>setTimeout(function(){window.close()}, 5000)</script>";
 
                             return $page;
@@ -364,23 +455,47 @@ class User
                     }
                     else
                     {
-                        // return success page
-                        $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
-                        <img src=\"https://v2.liteworlds.quest/LWLA.png\">
-                        <h1>The sign progress is already done, the change will be applied in less then 1min</h1>
-                        <script>setTimeout(function(){window.close()}, 5000)</script>";
+                        // return fail page
+                        $page = "<body style=\"background-color: black; color: crimson; text-align: center;\">
+                                <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                                <h1>Internal IP conflict, please sign this action from the IP it was made from</h1>";
 
                         return $page;
                     }
                 }
+            }
+            else
+            {
+                // return fail page
+                $page = "<body style=\"background-color: black; color: crimson; text-align: center;\">
+                        <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                        <h1>Action not found in database</h1>
+                        </body>";
+
+                return $page;
+            }
+        }
+
+        if ($action == "changepass")
+        {
+            // get user data
+            $stmt = self::$_db->prepare("SELECT * FROM data_change WHERE BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal LIMIT 1");
+            $stmt->bindParam(":copper", $copper);
+            $stmt->bindParam(":jade", $jade);
+            $stmt->bindParam(":crystal", $crystal);
+            $stmt->execute();
+
+            if($stmt->rowCount() == 1)
+            {
+                $data = (object)$stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+
+                if ($data->IP == "0.0.0.0")
+                {
+                    # code...
+                }
                 else
                 {
-                    // return fail page
-                    $page = "<body style=\"background-color: black; color: crimson; text-align: center;\">
-                            <img src=\"https://v2.liteworlds.quest/LWLA.png\">
-                            <h1>Internal IP conflict, please sign the login process from the IP it was made from</h1>";
-
-                    return $page;
+                    # code...
                 }
                 
             }
@@ -1033,18 +1148,21 @@ class User
 
     function changeMail($RETURN, $authkey, $mail, $IP)
     {
+        // force mail to lowercase
+        $mail = strtolower($mail);
+
         // check mail availability
-        $stmt = self::$_db->prepare("SELECT * FROM user WHERE Mail=:mail LIMIT 1");
+        $stmt = self::$_db->prepare("SELECT * FROM user WHERE BINARY Mail=:mail LIMIT 1");
         $stmt->bindParam(":mail", $mail);
         $stmt->execute();
         $mail_user = $stmt->rowCount();
         
-        $stmt = self::$_db->prepare("SELECT * FROM register WHERE Mail=:mail LIMIT 1");
+        $stmt = self::$_db->prepare("SELECT * FROM register WHERE BINARY Mail=:mail LIMIT 1");
         $stmt->bindParam(":mail", $mail);
         $stmt->execute();
         $mail_register = $stmt->rowCount();
 
-        $stmt = self::$_db->prepare("SELECT * FROM data_change WHERE Mail=:mail LIMIT 1");
+        $stmt = self::$_db->prepare("SELECT * FROM data_change WHERE BINARY Mail=:mail LIMIT 1");
         $stmt->bindParam(":mail", $mail);
         $stmt->execute();
         $mail_mail = $stmt->rowCount();
@@ -1189,6 +1307,9 @@ class User
             }
             else
             {
+                // create empty IP
+                $emptyIP = "0.0.0.0";
+
                 // generate the keys for signing
                 $done = false;
                 $key = new Key;
@@ -1233,7 +1354,7 @@ class User
                 $stmt->bindParam(":copper", $keys->copper);
                 $stmt->bindParam(":jade", $keys->jade);
                 $stmt->bindParam(":crystal", $keys->crystal);
-                $stmt->bindParam(":ip", $IP);
+                $stmt->bindParam(":ip", $emptyIP);
                 $stmt->bindParam(":time", $time);
                 $stmt->execute();
 
@@ -1311,7 +1432,266 @@ class User
         }
     }
 
+    function changePass($RETURN, $authkey, $pass, $IP)
+    {
+        // check pass is sha512 hash
+        if (strlen($pass) != strlen(preg_replace( "/[^a-zA-Z0-9]/", "", $pass)) || strlen($pass) != 128)
+        {
+            $RETURN->answer = "Password is not sha512 encrypted";
+            $RETURN->bool = false;
+            return $RETURN;
+        }
+
+        // get user data
+        $data = self::_get($authkey);
+
+        // if we found data
+        if ($data)
+        {
+            if ($data->IPlock == 1)
+            {
+                // and if the request IP match
+                if ($data->LastIP == $IP)
+                {
+                    // generate the keys for signing
+                    $done = false;
+                    $key = new Key;
+
+                    do
+                    {
+                        $keys = $key->Craft2FA();
+
+                        $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:copper OR BINARY Jade=:copper OR BINARY Crystal=:copper LIMIT 1");
+                        $stmt->bindParam(":copper", $keys->copper);
+                        $stmt->execute();
+
+                        if ($stmt->rowCount() == 0)
+                        {
+                            $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:jade OR BINARY Jade=:jade OR BINARY Crystal=:jade LIMIT 1");
+                            $stmt->bindParam(":jade", $keys->jade);
+                            $stmt->execute();
+
+                            if ($stmt->rowCount() == 0)
+                            {
+                                $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:crystal OR BINARY Jade=:crystal OR BINARY Crystal=:crystal LIMIT 1");
+                                $stmt->bindParam(":crystal", $keys->crystal);
+                                $stmt->execute();
+                                if ($stmt->rowCount() == 0)
+                                {
+                                    $done = true;
+                                }
+                            }
+                        }
+                    }
+                    while (!$done);
+
+                    // insert into memory table
+                    $time = time() + 120;
+
+                    $stmt = self::$_db->prepare("INSERT INTO data_change (User, Mail, Pass, Language, IPlock, Copper, Jade, Crystal, IP, Time) VALUES (:user, :mail, :pass, :language, :iplock, :copper, :jade, :crystal, :ip, :time)");
+                    $stmt->bindParam(":user", $data->User);
+                    $stmt->bindParam(":mail", $data->Mail);
+                    $stmt->bindParam(":pass", $pass);
+                    $stmt->bindParam(":language", $data->Language);
+                    $stmt->bindParam(":iplock", $data->IPlock);
+                    $stmt->bindParam(":copper", $keys->copper);
+                    $stmt->bindParam(":jade", $keys->jade);
+                    $stmt->bindParam(":crystal", $keys->crystal);
+                    $stmt->bindParam(":ip", $IP);
+                    $stmt->bindParam(":time", $time);
+                    $stmt->execute();
+
+                    if ($stmt->rowCount() > 0)
+                    {
+                        // send mail for verfication
+                        $betreff = "Sign your change Password action on LiteWorlds.quest Network";
+
+                        // message
+                        $link = "https://v2.liteworlds.quest/?method=user-execute&action=changepass&copper=".$keys->copper."&jade=".$keys->jade."&crystal=".$keys->crystal;
+                        $nachricht = "
+                        <html>
+                            <body style=\"background-color: black; color: deepskyblue;\">
+                            <table align=\"center\">
+                            <tr>
+                                <td><img src=\"https://v2.liteworlds.quest/LWLA.png\" style=\"height:250px; margin-left:auto; margin-right:auto; display:block;\"></td>
+                            </tr>
+
+                            <tr>
+                                <td><p align=\"center\" style=\"color:deepskyblue;\">You are going to change the password of your Account at LiteWorlds</p></td>
+                            </tr>
+                            <tr>
+                                <td><p align=\"center\" style=\"color:deepskyblue;\">User: ".$data->User."</p></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p align=\"center\" style=\"color:crimson;\">Please sign your Action</p>
+                                    <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"".$link."\">
+                                        <button style=\"font-size:24px;width:100%;color:deepskyblue;background-color:transparent;cursor:crosshair;border:3px solid deepskyblue;border-radius:7px;\">SIGN</button>
+                                    </a>
+                                    <p align=\"center\" style=\"color:crimson;\">Time: ".time()."</p>
+                                </td>
+                            </tr>
+                            </table>
+                            </body>
+                        </html>
+                        ";
+
+                        $header = 
+                            "From: Security <security@liteworlds.quest>" . "\r\n" .
+                            "Reply-To: Security <security@liteworlds.quest>" . "\r\n" .
+                            "MIME-Version: 1.0" . "\r\n" .
+                            "Content-type: text/html; charset=iso-8859-1" . "\r\n" .
+                            "X-Mailer: PHP/" . phpversion();
+
+                        // send the sign mail
+                        mail($data->Mail, $betreff, $nachricht, $header);
+
+                        // prepare and return success message
+                        $RETURN->answer = "Password change successfully prepared, sign this action via Email";
+                        $RETURN->bool = true;
+
+                        return $RETURN;
+                    }
+                    else
+                    {
+                        // prepare and return fail message
+                        $RETURN->answer = "Internal Database Error, Password change failed";
+                        $RETURN->bool = false;
+
+                        return $RETURN;
+                    }
+                }
+                else
+                {
+                    // prepare and retrun a IP fail message
+                    $RETURN->answer = "Internal IP Conflict, only the IP from last login is able to sign this action";
+                    $RETURN->bool = false;
+
+                    return $RETURN;
+                }
+            }
+            else
+            {
+                // generate the keys for signing
+                $done = false;
+                $key = new Key;
+
+                do
+                {
+                    $keys = $key->Craft2FA();
+
+                    $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:copper OR BINARY Jade=:copper OR BINARY Crystal=:copper LIMIT 1");
+                    $stmt->bindParam(":copper", $keys->copper);
+                    $stmt->execute();
+
+                    if ($stmt->rowCount() == 0)
+                    {
+                        $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:jade OR BINARY Jade=:jade OR BINARY Crystal=:jade LIMIT 1");
+                        $stmt->bindParam(":jade", $keys->jade);
+                        $stmt->execute();
+
+                        if ($stmt->rowCount() == 0)
+                        {
+                            $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:crystal OR BINARY Jade=:crystal OR BINARY Crystal=:crystal LIMIT 1");
+                            $stmt->bindParam(":crystal", $keys->crystal);
+                            $stmt->execute();
+                            if ($stmt->rowCount() == 0)
+                            {
+                                $done = true;
+                            }
+                        }
+                    }
+                }
+                while (!$done);
+
+                // insert into memory table
+                $time = time() + 120;
+
+                $stmt = self::$_db->prepare("INSERT INTO data_change (User, Mail, Pass, Language, IPlock, Copper, Jade, Crystal, IP, Time) VALUES (:user, :mail, :pass, :language, :iplock, :copper, :jade, :crystal, :ip, :time)");
+                $stmt->bindParam(":user", $data->User);
+                $stmt->bindParam(":mail", $data->Mail);
+                $stmt->bindParam(":pass", $pass);
+                $stmt->bindParam(":language", $data->Language);
+                $stmt->bindParam(":iplock", $data->IPlock);
+                $stmt->bindParam(":copper", $keys->copper);
+                $stmt->bindParam(":jade", $keys->jade);
+                $stmt->bindParam(":crystal", $keys->crystal);
+                $stmt->bindParam(":ip", $IP);
+                $stmt->bindParam(":time", $time);
+                $stmt->execute();
+
+                if ($stmt->rowCount() > 0)
+                {
+                    // send mail for verfication
+                    $betreff = "Sign your change Password action on LiteWorlds.quest Network";
+
+                    // message
+                    $link = "https://v2.liteworlds.quest/?method=user-execute&action=changepass&copper=".$keys->copper."&jade=".$keys->jade."&crystal=".$keys->crystal;
+                    $nachricht = "
+                    <html>
+                        <body style=\"background-color: black; color: deepskyblue;\">
+                        <table align=\"center\">
+                        <tr>
+                            <td><img src=\"https://v2.liteworlds.quest/LWLA.png\" style=\"height:250px; margin-left:auto; margin-right:auto; display:block;\"></td>
+                        </tr>
+
+                        <tr>
+                            <td><p align=\"center\" style=\"color:deepskyblue;\">You are going to change the password of your Account at LiteWorlds</p></td>
+                        </tr>
+                        <tr>
+                            <td><p align=\"center\" style=\"color:deepskyblue;\">User: ".$data->User."</p></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <p align=\"center\" style=\"color:crimson;\">Please sign your Action</p>
+                                <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"".$link."\">
+                                    <button style=\"font-size:24px;width:100%;color:deepskyblue;background-color:transparent;cursor:crosshair;border:3px solid deepskyblue;border-radius:7px;\">SIGN</button>
+                                </a>
+                                <p align=\"center\" style=\"color:crimson;\">Time: ".time()."</p>
+                            </td>
+                        </tr>
+                        </table>
+                        </body>
+                    </html>
+                    ";
+
+                    $header = 
+                        "From: Security <security@liteworlds.quest>" . "\r\n" .
+                        "Reply-To: Security <security@liteworlds.quest>" . "\r\n" .
+                        "MIME-Version: 1.0" . "\r\n" .
+                        "Content-type: text/html; charset=iso-8859-1" . "\r\n" .
+                        "X-Mailer: PHP/" . phpversion();
+
+                    // send the sign mail
+                    mail($data->Mail, $betreff, $nachricht, $header);
+
+                    // prepare and return success message
+                    $RETURN->answer = "Password change successfully prepared, sign this action via Email";
+                    $RETURN->bool = true;
+
+                    return $RETURN;
+                }
+                else
+                {
+                    // prepare and return fail message
+                    $RETURN->answer = "Internal Database Error, Password change failed";
+                    $RETURN->bool = false;
+
+                    return $RETURN;
+                }
+            }
+        }
+        else
+        {
+            // prepare and return fail message
+            $RETURN->answer = "Invalid AuthKey, logout failed";
+            $RETURN->bool = false;
+
+            return $RETURN;
+        }
+    }
+
     // change password
     // password recovery
-    // paired p2sh Address
+    // pair omnilite address
 }

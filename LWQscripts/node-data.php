@@ -41,8 +41,70 @@ class NodeData
         return self::$_node->getmempoolentry($txid);
     }
 
-    function getTransaction($txid)
+    function TxStreetPending()
     {
-        return self::$_node->gettransaction($txid);
+        $mempool = self::getMempool();
+        $array = array();
+        $index = 0;
+
+        $keys = array_keys($mempool);
+
+        for ($a=0; $a < count($mempool); $a++)
+        {
+            $element = $mempool[$keys[$a]];
+            $object = (object)array();
+
+            $object->tx = $keys[$a];
+            $object->lpb = (float)number_format(($element["fee"] / $element["size"]) * 100000000, 2);
+            $object->s = $element["size"];
+            $object->rs = $element["size"];
+            $object->tot = (float)number_format(self::getTXtotal($keys[$a]), 5);
+            $object->t = -1;
+            $object->ia = $element["time"];
+
+            $array[$a] = $object;
+
+            if ($a == 0) {
+                self::$_node->gettxout($$keys[$a], $index);
+            }
+
+            //echo json_encode($array);
+            //var_dump($element);
+        }
+
+        return $array;
+
+        /*foreach($mempool as $entry)
+        {
+            var_dump($entry);
+            $object = (object)array();
+            $object->tx = $entry[""]
+            $array[$index] = $object;
+        }*/
+    }
+
+    function getTXtotal($txid)
+    {
+        $loop = true;
+        $index = 0;
+        $total = 0;
+
+        do
+        {
+            $entry = self::$_node->gettxout($txid, $index);
+
+            if (!is_null($entry))
+            {
+                $total += $entry["value"];
+                $index++;
+            }
+            else
+            {
+                $loop = false;
+            }
+        }
+        while($loop);
+
+        return $total;
     }
 }

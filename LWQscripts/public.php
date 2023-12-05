@@ -7,7 +7,12 @@ if ($_GET["method"] == "public")
     // create the RETURN object
     $RETURN->answer = "Here are the public commands.";
     $RETURN->bool = true;
-    $RETURN->commands = array("public-hello"=>"Display the Hello World Example");
+    $RETURN->commands = array(
+        "public-hello"=>"Display the Hello World Example",
+        "public-get-block"=>"Get block by blockhash",
+        "public-get-mempool"=>"Get the actual mempool data",
+        "public-get-mempool-entry"=>"Get a specific transaction from mempool by txid"
+    );
 
     // print the RETURN as JSON
     echo json_encode($RETURN, JSON_PRETTY_PRINT);
@@ -96,27 +101,16 @@ if ($_GET["method"] == "public-get-mempool-entry")
     }
 }
 
-if ($_GET["method"] == "public-get-transaction")
+if ($_GET["method"] == "txstreet-pending")
 {
     // set Content Type to JSON
     header("Content-type: application/json; charset=utf-8");
 
-    if (isset($_GET["txid"]))
-    {
-        // call the getMempool function from the Public class and print it as JSON
-        echo json_encode($PUBLIC->getTransaction($_GET["txid"]), JSON_PRETTY_PRINT);
+    // call the getMempool function from the Public class and print it as JSON
+    echo json_encode($PUBLIC->TxStreetPending());
 
-        // increase the method counter
-        $COUNTER->increase($_GET["method"]);
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
 
-        die();
-    }
-    else
-    {
-        // prepare and print fail message as JSON
-        $RETURN->answer = "Parameter \"txid\" is missing";
-        $RETURN->bool = false;
-
-        echo json_encode($RETURN, JSON_PRETTY_PRINT);
-    }
+    die();
 }
