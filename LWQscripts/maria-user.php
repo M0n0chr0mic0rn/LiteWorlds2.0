@@ -38,6 +38,42 @@ class User
         $stmt->execute();
     }
 
+    private function _KEYRING($table)
+    {
+        $done = false;
+        $key = new Key;
+
+        do
+        {
+            $keys = $key->Craft2FA();
+
+            $stmt = self::$_db->prepare("SELECT * FROM $table WHERE BINARY Copper=:copper OR BINARY Jade=:copper OR BINARY Crystal=:copper LIMIT 1");
+            $stmt->bindParam(":copper", $keys->copper);
+            $stmt->execute();
+
+            if ($stmt->rowCount() == 0)
+            {
+                $stmt = self::$_db->prepare("SELECT * FROM $table WHERE BINARY Copper=:jade OR BINARY Jade=:jade OR BINARY Crystal=:jade LIMIT 1");
+                $stmt->bindParam(":jade", $keys->jade);
+                $stmt->execute();
+
+                if ($stmt->rowCount() == 0)
+                {
+                    $stmt = self::$_db->prepare("SELECT * FROM $table WHERE BINARY Copper=:crystal OR BINARY Jade=:crystal OR BINARY Crystal=:crystal LIMIT 1");
+                    $stmt->bindParam(":crystal", $keys->crystal);
+                    $stmt->execute();
+                    if ($stmt->rowCount() == 0)
+                    {
+                        $done = true;
+                    }
+                }
+            }
+        }
+        while (!$done);
+
+        return $keys;
+    }
+
     function hello($RETURN, $IP)
     {
         // The "Hello World" Example
@@ -99,14 +135,14 @@ class User
             $stmt->bindParam(":crystal", $crystal);
             $stmt->execute();
 
-            if($stmt->rowCount() == 1)
+            if ($stmt->rowCount() == 1)
             {
-                // store user data
+                // write user data in var
                 $data = (object)$stmt->fetchAll(PDO::FETCH_ASSOC)[0];
 
                 if ($data->IP == $IP)
                 {
-                    $stmt = self::$_db->prepare("UPDATE user SET IPlock=:iplock WHERE User=:user");
+                    $stmt = self::$_db->prepare("UPDATE user SET IPlock=:iplock WHERE BINARY User=:user LIMIT 1");
                     $stmt->bindParam(":iplock", $data->IPlock);
                     $stmt->bindParam(":user", $data->User);
                     $stmt->execute();
@@ -231,6 +267,76 @@ class User
                     return $page;
                 }
                 
+            }
+            else
+            {
+                // return fail page
+                $page = "<body style=\"background-color: black; color: crimson; text-align: center;\">
+                        <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                        <h1>Action not found in database</h1>
+                        </body>";
+
+                return $page;
+            }
+        }
+
+        if ($action == "passrecovery")
+        {
+            // get user data
+            $stmt = self::$_db->prepare("SELECT * FROM data_change WHERE BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal LIMIT 1");
+            $stmt->bindParam(":copper", $copper);
+            $stmt->bindParam(":jade", $jade);
+            $stmt->bindParam(":crystal", $crystal);
+            $stmt->execute();
+
+            if ($stmt->rowCount() == 1)
+            {
+                // write user data in var
+                $data = (object)$stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+
+                if ($data->IP == $IP)
+                {
+                    $stmt = self::$_db->prepare("UPDATE user SET Pass=:pass WHERE BINARY User=:user LIMIT 1");
+                    $stmt->bindParam(":pass", $data->Pass);
+                    $stmt->bindParam(":user", $data->User);
+                    $stmt->execute();
+
+                    if ($stmt->errorInfo()[0] == "00000")
+                    {
+                        // remove user from memorytable
+                        $stmt = self::$_db->prepare("DELETE FROM data_change WHERE BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal LIMIT 1");
+                        $stmt->bindParam(":copper", $copper);
+                        $stmt->bindParam(":jade", $jade);
+                        $stmt->bindParam(":crystal", $crystal);
+                        $stmt->execute();
+
+                        // return success page
+                        $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
+                                <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                                <h1>New password setup successfully</h1>
+                                <script>setTimeout(function(){window.close()}, 10000)</script>";
+
+                        return $page;
+                    }
+                    else
+                    {
+                        // return fail page
+                        $page = "<body style=\"background-color: black; color: crimson; text-align: center;\">
+                                <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                                <h1>Internal Database write error</h1>";
+
+                        return $page;
+                    }
+                }
+                else
+                {
+                    // return fail page
+                    $page = "<body style=\"background-color: black; color: crimson; text-align: center;\">
+                            <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                            <h1>Internal IP conflict, please sign the turn IP Lock on/off process from the IP it was made from</h1>";
+
+                    return $page;
+                }
             }
             else
             {
@@ -374,7 +480,7 @@ class User
 
                             if ($stmt->errorInfo()[0] == "00000")
                             {
-                                // delete from table change_data
+                                // delete from table data_change
                                 $stmt = self::$_db->prepare("DELETE FROM data_change WHERE BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal LIMIT 1");
                                 $stmt->bindParam(":copper", $copper);
                                 $stmt->bindParam(":jade", $jade);
@@ -491,11 +597,87 @@ class User
 
                 if ($data->IP == "0.0.0.0")
                 {
-                    # code...
+                    // write new pass to user
+                    $stmt = self::$_db->prepare("UPDATE user SET Pass=:pass WHERE BINARY User=:user LIMIT 1");
+                    $stmt->bindParam(":pass", $data->Pass);
+                    $stmt->bindParam(":user", $data->User);
+                    $stmt->execute();
+
+                    if ($stmt->errorInfo()[0] == "00000")
+                    {
+                        // delete from table data_change
+                        $stmt = self::$_db->prepare("DELETE FROM data_change WHERE BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal LIMIT 1");
+                        $stmt->bindParam(":copper", $copper);
+                        $stmt->bindParam(":jade", $jade);
+                        $stmt->bindParam(":crystal", $crystal);
+                        $stmt->execute();
+
+                        // return success page
+                        $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
+                        <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                        <h1>Action signed, the change has been applied</h1>
+                        <script>setTimeout(function(){window.close()}, 5000)</script>";
+
+                        return $page;
+                    }
+                    else
+                    {
+                        // return fail page
+                        $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
+                        <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                        <h1>Internal write error, try again. Should it happen again please get in contact with us</h1>
+                        <script>setTimeout(function(){window.close()}, 5000)</script>";
+
+                        return $page;
+                    }
                 }
                 else
                 {
-                    # code...
+                    if ($data->IP == $IP)
+                    {
+                        // write new pass to user
+                        $stmt = self::$_db->prepare("UPDATE user SET Pass=:pass WHERE BINARY User=:user LIMIT 1");
+                        $stmt->bindParam(":pass", $data->Pass);
+                        $stmt->bindParam(":user", $data->User);
+                        $stmt->execute();
+
+                        if ($stmt->errorInfo()[0] == "00000")
+                        {
+                            // delete from table data_change
+                            $stmt = self::$_db->prepare("DELETE FROM data_change WHERE BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal LIMIT 1");
+                            $stmt->bindParam(":copper", $copper);
+                            $stmt->bindParam(":jade", $jade);
+                            $stmt->bindParam(":crystal", $crystal);
+                            $stmt->execute();
+
+                            // return success page
+                            $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
+                            <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                            <h1>Action signed, the change has been applied</h1>
+                            <script>setTimeout(function(){window.close()}, 5000)</script>";
+
+                            return $page;
+                        }
+                        else
+                        {
+                            // return fail page
+                            $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
+                            <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                            <h1>Internal write error, try again. Should it happen again please get in contact with us</h1>
+                            <script>setTimeout(function(){window.close()}, 5000)</script>";
+
+                            return $page;
+                        }
+                    }
+                    else
+                    {
+                        // return fail page
+                        $page = "<body style=\"background-color: black; color: crimson; text-align: center;\">
+                                <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                                <h1>Internal IP conflict, please sign this action from the IP it was made from</h1>";
+
+                        return $page;
+                    }
                 }
                 
             }
@@ -524,36 +706,7 @@ class User
             if ($data->LastIP == $IP)
             {
                 // generate the keys for signing
-                $done = false;
-                $key = new Key;
-
-                do
-                {
-                    $keys = $key->Craft2FA();
-
-                    $stmt = self::$_db->prepare("SELECT * FROM data_change WHERE BINARY Copper=:copper OR BINARY Jade=:copper OR BINARY Crystal=:copper LIMIT 1");
-                    $stmt->bindParam(":copper", $keys->copper);
-                    $stmt->execute();
-
-                    if ($stmt->rowCount() == 0)
-                    {
-                        $stmt = self::$_db->prepare("SELECT * FROM data_change WHERE BINARY Copper=:jade OR BINARY Jade=:jade OR BINARY Crystal=:jade LIMIT 1");
-                        $stmt->bindParam(":jade", $keys->jade);
-                        $stmt->execute();
-
-                        if ($stmt->rowCount() == 0)
-                        {
-                            $stmt = self::$_db->prepare("SELECT * FROM data_change WHERE BINARY Copper=:crystal OR BINARY Jade=:crystal OR BINARY Crystal=:crystal LIMIT 1");
-                            $stmt->bindParam(":crystal", $keys->crystal);
-                            $stmt->execute();
-                            if ($stmt->rowCount() == 0)
-                            {
-                                $done = true;
-                            }
-                        }
-                    }
-                }
-                while (!$done);
+                $keys = self::_KEYRING("data_change");
 
                 // setup new IP Lock value
                 if ($data->IPlock == 1)
@@ -737,36 +890,7 @@ class User
 
         // PREPARINGS
         // generate the keys
-        $done = false;
-        $key = new Key;
-
-        do
-        {
-            $keys = $key->Craft2FA();
-
-            $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:copper OR BINARY Jade=:copper OR BINARY Crystal=:copper LIMIT 1");
-            $stmt->bindParam(":copper", $keys->copper);
-            $stmt->execute();
-
-            if ($stmt->rowCount() == 0)
-            {
-                $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:jade OR BINARY Jade=:jade OR BINARY Crystal=:jade LIMIT 1");
-                $stmt->bindParam(":jade", $keys->jade);
-                $stmt->execute();
-
-                if ($stmt->rowCount() == 0)
-                {
-                    $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:crystal OR BINARY Jade=:crystal OR BINARY Crystal=:crystal LIMIT 1");
-                    $stmt->bindParam(":crystal", $keys->crystal);
-                    $stmt->execute();
-                    if ($stmt->rowCount() == 0)
-                    {
-                        $done = true;
-                    }
-                }
-            }
-        }
-        while (!$done);
+        $keys = self::_KEYRING("register");
 
         // adding to MemoryTable with a 10 minute TimeWindow
         $time = time() + 600;
@@ -879,36 +1003,7 @@ class User
         {
             // PREPARINGS
             // generate the keys for signing
-            $done = false;
-            $key = new Key;
-
-            do
-            {
-                $keys = $key->Craft2FA();
-
-                $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:copper OR BINARY Jade=:copper OR BINARY Crystal=:copper LIMIT 1");
-                $stmt->bindParam(":copper", $keys->copper);
-                $stmt->execute();
-
-                if ($stmt->rowCount() == 0)
-                {
-                    $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:jade OR BINARY Jade=:jade OR BINARY Crystal=:jade LIMIT 1");
-                    $stmt->bindParam(":jade", $keys->jade);
-                    $stmt->execute();
-
-                    if ($stmt->rowCount() == 0)
-                    {
-                        $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:crystal OR BINARY Jade=:crystal OR BINARY Crystal=:crystal LIMIT 1");
-                        $stmt->bindParam(":crystal", $keys->crystal);
-                        $stmt->execute();
-                        if ($stmt->rowCount() == 0)
-                        {
-                            $done = true;
-                        }
-                    }
-                }
-            }
-            while (!$done);
+            $keys = self::_KEYRING("login");
 
             // generate the key for authentication
             $done = false;
@@ -1186,36 +1281,7 @@ class User
                 if ($data->LastIP == $IP)
                 {
                     // generate the keys for signing
-                    $done = false;
-                    $key = new Key;
-
-                    do
-                    {
-                        $keys = $key->Craft2FA();
-
-                        $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:copper OR BINARY Jade=:copper OR BINARY Crystal=:copper LIMIT 1");
-                        $stmt->bindParam(":copper", $keys->copper);
-                        $stmt->execute();
-
-                        if ($stmt->rowCount() == 0)
-                        {
-                            $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:jade OR BINARY Jade=:jade OR BINARY Crystal=:jade LIMIT 1");
-                            $stmt->bindParam(":jade", $keys->jade);
-                            $stmt->execute();
-
-                            if ($stmt->rowCount() == 0)
-                            {
-                                $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:crystal OR BINARY Jade=:crystal OR BINARY Crystal=:crystal LIMIT 1");
-                                $stmt->bindParam(":crystal", $keys->crystal);
-                                $stmt->execute();
-                                if ($stmt->rowCount() == 0)
-                                {
-                                    $done = true;
-                                }
-                            }
-                        }
-                    }
-                    while (!$done);
+                    $keys = self::_KEYRING("data_change");
 
                     // insert into memory table
                     $time = time() + 120;
@@ -1311,36 +1377,7 @@ class User
                 $emptyIP = "0.0.0.0";
 
                 // generate the keys for signing
-                $done = false;
-                $key = new Key;
-
-                do
-                {
-                    $keys = $key->Craft2FA();
-
-                    $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:copper OR BINARY Jade=:copper OR BINARY Crystal=:copper LIMIT 1");
-                    $stmt->bindParam(":copper", $keys->copper);
-                    $stmt->execute();
-
-                    if ($stmt->rowCount() == 0)
-                    {
-                        $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:jade OR BINARY Jade=:jade OR BINARY Crystal=:jade LIMIT 1");
-                        $stmt->bindParam(":jade", $keys->jade);
-                        $stmt->execute();
-
-                        if ($stmt->rowCount() == 0)
-                        {
-                            $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:crystal OR BINARY Jade=:crystal OR BINARY Crystal=:crystal LIMIT 1");
-                            $stmt->bindParam(":crystal", $keys->crystal);
-                            $stmt->execute();
-                            if ($stmt->rowCount() == 0)
-                            {
-                                $done = true;
-                            }
-                        }
-                    }
-                }
-                while (!$done);
+                $keys = self::_KEYRING("data_change");
 
                 // insert into memory table
                 $time = time() + 120;
@@ -1454,36 +1491,7 @@ class User
                 if ($data->LastIP == $IP)
                 {
                     // generate the keys for signing
-                    $done = false;
-                    $key = new Key;
-
-                    do
-                    {
-                        $keys = $key->Craft2FA();
-
-                        $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:copper OR BINARY Jade=:copper OR BINARY Crystal=:copper LIMIT 1");
-                        $stmt->bindParam(":copper", $keys->copper);
-                        $stmt->execute();
-
-                        if ($stmt->rowCount() == 0)
-                        {
-                            $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:jade OR BINARY Jade=:jade OR BINARY Crystal=:jade LIMIT 1");
-                            $stmt->bindParam(":jade", $keys->jade);
-                            $stmt->execute();
-
-                            if ($stmt->rowCount() == 0)
-                            {
-                                $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:crystal OR BINARY Jade=:crystal OR BINARY Crystal=:crystal LIMIT 1");
-                                $stmt->bindParam(":crystal", $keys->crystal);
-                                $stmt->execute();
-                                if ($stmt->rowCount() == 0)
-                                {
-                                    $done = true;
-                                }
-                            }
-                        }
-                    }
-                    while (!$done);
+                    $keys = self::_KEYRING("data_change");
 
                     // insert into memory table
                     $time = time() + 120;
@@ -1573,36 +1581,7 @@ class User
             else
             {
                 // generate the keys for signing
-                $done = false;
-                $key = new Key;
-
-                do
-                {
-                    $keys = $key->Craft2FA();
-
-                    $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:copper OR BINARY Jade=:copper OR BINARY Crystal=:copper LIMIT 1");
-                    $stmt->bindParam(":copper", $keys->copper);
-                    $stmt->execute();
-
-                    if ($stmt->rowCount() == 0)
-                    {
-                        $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:jade OR BINARY Jade=:jade OR BINARY Crystal=:jade LIMIT 1");
-                        $stmt->bindParam(":jade", $keys->jade);
-                        $stmt->execute();
-
-                        if ($stmt->rowCount() == 0)
-                        {
-                            $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY Copper=:crystal OR BINARY Jade=:crystal OR BINARY Crystal=:crystal LIMIT 1");
-                            $stmt->bindParam(":crystal", $keys->crystal);
-                            $stmt->execute();
-                            if ($stmt->rowCount() == 0)
-                            {
-                                $done = true;
-                            }
-                        }
-                    }
-                }
-                while (!$done);
+                $keys = self::_KEYRING("data_change");
 
                 // insert into memory table
                 $time = time() + 120;
@@ -1691,7 +1670,120 @@ class User
         }
     }
 
-    // change password
-    // password recovery
+    function passRecovery($RETURN, $user, $mail, $pass, $IP)
+    {
+        // force user uppercase
+        $user = strtoupper($user);
+
+        // force mail lowercase
+        $mail = strtolower($mail);
+
+        // check pass is sha512 hash
+        if (strlen($pass) != strlen(preg_replace( "/[^a-zA-Z0-9]/", "", $pass)) || strlen($pass) != 128)
+        {
+            $RETURN->answer = "Password is not sha512 encrypted";
+            $RETURN->bool = false;
+            return $RETURN;
+        }
+
+        // check inputs user and mail belong to an Account
+        $stmt = self::$_db->prepare("SELECT * FROM user WHERE BINARY User=:user AND BINARY Mail=:mail LIMIT 1");
+        $stmt->bindParam(":user", $user);
+        $stmt->bindParam(":mail", $mail);
+        $stmt->execute();
+
+        if ($stmt->rowCount() == 1)
+        {
+            // write user data in var
+            $data = (object)$stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+
+            // generate the keys for signing
+            $keys = self::_KEYRING("data_change");
+
+            // insert into memory table
+            $time = time() + 120;
+
+            $stmt = self::$_db->prepare("INSERT INTO data_change (User, Mail, Pass, Language, IPlock, Copper, Jade, Crystal, IP, Time) VALUES (:user, :mail, :pass, :language, :iplock, :copper, :jade, :crystal, :ip, :time)");
+            $stmt->bindParam(":user", $data->User);
+            $stmt->bindParam(":mail", $data->Mail);
+            $stmt->bindParam(":pass", $pass);
+            $stmt->bindParam(":language", $data->Language);
+            $stmt->bindParam(":iplock", $data->IPlock);
+            $stmt->bindParam(":copper", $keys->copper);
+            $stmt->bindParam(":jade", $keys->jade);
+            $stmt->bindParam(":crystal", $keys->crystal);
+            $stmt->bindParam(":ip", $IP);
+            $stmt->bindParam(":time", $time);
+            $stmt->execute();
+
+            if ($stmt->errorInfo()[0] == "00000")
+            {
+                // send mail for verfication
+                $betreff = "Sign your Password Recovery action on LiteWorlds.quest Network";
+
+                // message
+                $link = "https://v2.liteworlds.quest/?method=user-execute&action=passrecovery&copper=".$keys->copper."&jade=".$keys->jade."&crystal=".$keys->crystal;
+                $nachricht = "
+                <html>
+                    <body style=\"background-color: black; color: deepskyblue;\">
+                    <table align=\"center\">
+                    <tr>
+                        <td><img src=\"https://v2.liteworlds.quest/LWLA.png\" style=\"height:250px; margin-left:auto; margin-right:auto; display:block;\"></td>
+                    </tr>
+
+                    <tr>
+                        <td><p align=\"center\" style=\"color:deepskyblue;\">You are going to change the password of your Account at LiteWorlds</p></td>
+                    </tr>
+                    <tr>
+                        <td><p align=\"center\" style=\"color:deepskyblue;\">User: ".$data->User."</p></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p align=\"center\" style=\"color:crimson;\">Please sign your Action</p>
+                            <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"".$link."\">
+                                <button style=\"font-size:24px;width:100%;color:deepskyblue;background-color:transparent;cursor:crosshair;border:3px solid deepskyblue;border-radius:7px;\">SIGN</button>
+                            </a>
+                            <p align=\"center\" style=\"color:crimson;\">Time: ".time()."</p>
+                        </td>
+                    </tr>
+                    </table>
+                    </body>
+                </html>
+                ";
+
+                $header = 
+                    "From: Security <security@liteworlds.quest>" . "\r\n" .
+                    "Reply-To: Security <security@liteworlds.quest>" . "\r\n" .
+                    "MIME-Version: 1.0" . "\r\n" .
+                    "Content-type: text/html; charset=iso-8859-1" . "\r\n" .
+                    "X-Mailer: PHP/" . phpversion();
+
+                // send the sign mail
+                mail($data->Mail, $betreff, $nachricht, $header);
+
+                // set and return answer
+                $RETURN->answer = "Password Recovery successfully prepared, sign this action via Email";
+                $RETURN->bool = true;
+
+                return $RETURN;
+            }
+            else
+            {
+                // prepare and return fail message
+                $RETURN->answer = "Internal Database Error, Password Recovery failed";
+                $RETURN->bool = false;
+
+                return $RETURN;
+            }
+        }
+        else
+        {
+            $RETURN->answer = "No Account with the given data found";
+            $RETURN->bool = false;
+
+            return $RETURN;
+        }
+    }
+
     // pair omnilite address
 }

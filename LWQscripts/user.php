@@ -254,3 +254,49 @@ if ($_GET["method"] == "user-change-pass")
     }
     die();
 }
+
+if ($_GET["method"] == "user-pass-recovery")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    //check all parameters are given
+    if (isset($_GET["user"]))
+    {
+        if (isset($_GET["mail"]))
+        {
+            if (isset($_GET["pass"]))
+            {
+                // run the pass recovery function
+                echo json_encode($USER->passRecovery($RETURN, $_GET["user"], $_GET["mail"], $_GET["pass"], $IP), JSON_PRETTY_PRINT);
+            }
+            else
+            {
+                // set and print answer
+                $RETURN->answer = "Parameter \"pass\" is missing";
+                $RETURN->bool = false;
+                
+                echo json_encode($RETURN, JSON_PRETTY_PRINT);
+            }
+        }
+        else
+        {
+            // set and print answer
+            $RETURN->answer = "Parameter \"mail\" is missing";
+            $RETURN->bool = false;
+            
+            echo json_encode($RETURN, JSON_PRETTY_PRINT);
+        }
+    }
+    else
+    {
+        // set and print answer
+        $RETURN->answer = "Parameter \"user\" is missing";
+        $RETURN->bool = false;
+        
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    }
+}
