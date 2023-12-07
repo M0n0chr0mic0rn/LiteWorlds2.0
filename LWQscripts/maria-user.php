@@ -1010,6 +1010,7 @@ class User
 
             do
             {
+                $key = new Key;
                 $authkey = $key->CraftAuth();
 
                 $stmt = self::$_db->prepare("SELECT * FROM login WHERE BINARY AuthKey=:authkey LIMIT 1");
@@ -1785,5 +1786,143 @@ class User
         }
     }
 
-    // pair omnilite address
+    function pairing($RETURN, $authkey, $address, $IP)
+    {
+        // PRECHECK
+        // is given the address a p2sh-segwit address
+        if (substr($address, 0, 1) == "M")
+        {
+            // get user data
+            $data = self::_get($authkey);
+
+            if ($data->LastIP == $IP)
+            {
+                // check for already existing pairing request
+                $stmt = self::$_db->prepare("SELECT * FROM pairing WHERE BINARY User=:user LIMIT 1");
+                $stmt->bindParam(":user", $data->User);
+                $stmt->execute();
+                $pairing_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                if ($stmt->rowCount() == 0)
+                {
+                    $amount = rand(10000, 20000) / 100000000;
+                    $amount = number_format($amount, 8, ".", "");
+
+                    $time = time() + 3600;
+
+                    $stmt = self::$_db->prepare("INSERT INTO pairing (User, Address, Amount, Time) VALUES (:user, :address, :amount, :time)");
+                    $stmt->bindParam(":user", $data->User);
+                    $stmt->bindParam(":address", $address);
+                    $stmt->bindParam(":amount", $amount);
+                    $stmt->bindParam(":time", $time);
+                    $stmt->execute();
+
+                    if ($stmt->errorInfo()[0] == "00000")
+                    {
+                        $RETURN->answer = 'Pairing started, send the given amount to your self-custody address to sign pairing. You have 1 hour.';
+                        $RETURN->bool = true;
+                        $RETURN->amount = $amount;
+                        $RETURN->destination = $address;
+                    }
+                    else
+                    {
+                        $RETURN->answer = "Internal Database Error, Pairing failed";
+                        $RETURN->bool = false;
+                    }
+                }
+                else
+                {
+                    $RETURN->answer = "Pairing request already active, sign it by sending the offered amount: " . $pairing_data->Amount . " LTC to " . $pairing_data->Address;
+                    $RETURN->bool = false;
+                }
+            }
+            else
+            {
+                $RETURN->answer = "Pairing request is only possible from last login IP";
+                $RETURN->bool = false;
+            }
+        }
+        else
+        {
+            $RETURN->answer = "The address have to be a p2sh-segwit address, starting with 'M'";
+            $RETURN->bool = false;
+        }
+
+        return $RETURN;
+    }
+
+    function pairingSign($RETURN, $authkey, $txid, $IP)
+    {
+        // get user data
+        $data = self::_get($authkey);
+
+        // get pairing data
+        $stmt = self::$_db->prepare("SELECT * FROM pairing WHERE BINARY User=:user LIMIT 1");
+        $stmt->bindParam(":user", $data->User);
+        $stmt->execute();
+
+        try
+        {
+            // safe pairing data as object
+            $pairing_data = (object)$stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+
+            // create a bool which will be turned true if transaction has been found
+            $thing = false;
+
+            // get transaction content from litecoinspace.org
+            $content = file_get_contents("https://litecoinspace.org/api/address/" . $pairing_data->Address . "/txs");
+            $content = json_decode($content);
+
+            for ($a=0; $a < count($content); $a++)
+            {
+                $element = $content[$a];
+
+                if ($element->txid == $txid)
+                {
+                    for ($b=0; $b < count($element->vout); $b++)
+                    { 
+                        $subelement = $element->vout[$b];
+
+                        // if vout address is the stored one and the amount fits and transaction is confirmed set thing to true
+                        if ($subelement->scriptpubkey_address == $pairing_data->Address && $element->status->confirmed && $pairing_data->Amount == number_format(($subelement->value / 100000000), 8, ".", ""))
+                        {
+                            $thing = true;
+                        }
+                    }
+                }
+            }
+
+            if ($thing)
+            {
+                $stmt = self::$_db->prepare("UPDATE user SET PairingAddress=:pa WHERE BINARY User=:user LIMIT 1");
+                $stmt->bindParam(":pa", $pairing_data->Address);
+                $stmt->bindParam(":user", $data->User);
+                $stmt->execute();
+
+                if ($stmt->errorInfo()[0] == "00000")
+                {
+                    $stmt = self::$_db->prepare("DELETE FROM pairing WHERE BINARY User=:user LIMIT 1");
+                    $stmt->bindParam(":user", $data->User);
+                    $stmt->execute();
+
+                    $RETURN->answer = "Self custody pairing complete";
+                    $RETURN->bool = true;
+                }
+            }
+            else
+            {
+                $RETURN->answer = "Either the txid is incorrect or the amount is missmatching or the transaction has not yet been confirmed";
+                $RETURN->bool = false;
+            }
+            
+            return $RETURN;
+        }
+        catch (\Throwable $th)
+        {
+            $RETURN->answer = "No pairing action found";
+            $RETURN->bool = false;
+
+            return $RETURN;
+        }
+    }
 }

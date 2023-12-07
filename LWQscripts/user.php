@@ -52,11 +52,12 @@ if ($_GET["method"] == "user-iplock")
     }
     else
     {
-        $RETURN->answer = "Parameter \"authkey\" is missing";
+        $RETURN->answer = "Parameter 'authkey' is missing";
         $RETURN->bool = false;
         
         echo json_encode($RETURN, JSON_PRETTY_PRINT);
-    } 
+    }
+    die();
 }
 
 if ($_GET["method"] == "user-register")
@@ -79,7 +80,7 @@ if ($_GET["method"] == "user-register")
             }
             else
             {
-                $RETURN->answer = "Parameter \"mail\" is missing";
+                $RETURN->answer = "Parameter 'mail' is missing";
                 $RETURN->bool = false;
         
                 echo json_encode($RETURN, JSON_PRETTY_PRINT);
@@ -87,7 +88,7 @@ if ($_GET["method"] == "user-register")
         }
         else
         {
-            $RETURN->answer = "Parameter \"pass\" is missing";
+            $RETURN->answer = "Parameter 'pass' is missing";
             $RETURN->bool = false;
         
             echo json_encode($RETURN, JSON_PRETTY_PRINT);
@@ -95,7 +96,7 @@ if ($_GET["method"] == "user-register")
     }
     else
     {
-        $RETURN->answer = "Parameter \"user\" is missing";
+        $RETURN->answer = "Parameter 'user' is missing";
         $RETURN->bool = false;
         
         echo json_encode($RETURN, JSON_PRETTY_PRINT);
@@ -121,7 +122,7 @@ if ($_GET["method"] == "user-login")
         }
         else
         {
-            $RETURN->answer = "Parameter \"pass\" is missing";
+            $RETURN->answer = "Parameter 'pass' is missing";
             $RETURN->bool = false;
         
             echo json_encode($RETURN, JSON_PRETTY_PRINT);
@@ -129,7 +130,7 @@ if ($_GET["method"] == "user-login")
     }
     else
     {
-        $RETURN->answer = "Parameter \"user\" is missing";
+        $RETURN->answer = "Parameter 'user' is missing";
         $RETURN->bool = false;
         
         echo json_encode($RETURN, JSON_PRETTY_PRINT);
@@ -153,7 +154,7 @@ if ($_GET["method"] == "user-logout")
     }
     else
     {
-        $RETURN->answer = "Parameter \"authkey\" is missing";
+        $RETURN->answer = "Parameter 'authkey' is missing";
         $RETURN->bool = false;
         
         echo json_encode($RETURN, JSON_PRETTY_PRINT);
@@ -177,7 +178,7 @@ if ($_GET["method"] == "user-get")
     }
     else
     {
-        $RETURN->answer = "Parameter \"authkey\" is missing";
+        $RETURN->answer = "Parameter 'authkey' is missing";
         $RETURN->bool = false;
         
         echo json_encode($RETURN, JSON_PRETTY_PRINT);
@@ -203,7 +204,7 @@ if ($_GET["method"] == "user-change-mail")
         }
         else
         {
-            $RETURN->answer = "Parameter \"mail\" is missing";
+            $RETURN->answer = "Parameter 'mail' is missing";
             $RETURN->bool = false;
             
             echo json_encode($RETURN, JSON_PRETTY_PRINT);
@@ -212,7 +213,7 @@ if ($_GET["method"] == "user-change-mail")
     }
     else
     {
-        $RETURN->answer = "Parameter \"authkey\" is missing";
+        $RETURN->answer = "Parameter 'authkey' is missing";
         $RETURN->bool = false;
         
         echo json_encode($RETURN, JSON_PRETTY_PRINT);
@@ -238,7 +239,7 @@ if ($_GET["method"] == "user-change-pass")
         }
         else
         {
-            $RETURN->answer = "Parameter \"pass\" is missing";
+            $RETURN->answer = "Parameter 'pass' is missing";
             $RETURN->bool = false;
             
             echo json_encode($RETURN, JSON_PRETTY_PRINT);
@@ -247,7 +248,7 @@ if ($_GET["method"] == "user-change-pass")
     }
     else
     {
-        $RETURN->answer = "Parameter \"authkey\" is missing";
+        $RETURN->answer = "Parameter 'authkey' is missing";
         $RETURN->bool = false;
         
         echo json_encode($RETURN, JSON_PRETTY_PRINT);
@@ -276,7 +277,7 @@ if ($_GET["method"] == "user-pass-recovery")
             else
             {
                 // set and print answer
-                $RETURN->answer = "Parameter \"pass\" is missing";
+                $RETURN->answer = "Parameter 'pass' is missing";
                 $RETURN->bool = false;
                 
                 echo json_encode($RETURN, JSON_PRETTY_PRINT);
@@ -285,7 +286,7 @@ if ($_GET["method"] == "user-pass-recovery")
         else
         {
             // set and print answer
-            $RETURN->answer = "Parameter \"mail\" is missing";
+            $RETURN->answer = "Parameter 'mail' is missing";
             $RETURN->bool = false;
             
             echo json_encode($RETURN, JSON_PRETTY_PRINT);
@@ -294,9 +295,78 @@ if ($_GET["method"] == "user-pass-recovery")
     else
     {
         // set and print answer
-        $RETURN->answer = "Parameter \"user\" is missing";
+        $RETURN->answer = "Parameter 'user' is missing";
         $RETURN->bool = false;
         
         echo json_encode($RETURN, JSON_PRETTY_PRINT);
     }
+    die();
+}
+
+if ($_GET["method"] == "user-pairing")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    // check all parameters are given
+    if (isset($_GET["authkey"]))
+    {
+        if (isset($_GET["address"]))
+        {
+            // run the pairing function
+            echo json_encode($USER->pairing($RETURN, $AUTHKEY, $_GET["address"], $IP), JSON_PRETTY_PRINT);
+        }
+        else
+        {
+            $RETURN->answer = "Parameter 'address' is missing";
+            $RETURN->bool = false;
+            
+            echo json_encode($RETURN, JSON_PRETTY_PRINT);
+        }
+    }
+    else
+    {
+        $RETURN->answer = "Parameter 'authkey' is missing";
+        $RETURN->bool = false;
+        
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    }
+    die();
+}
+
+if ($_GET["method"] == "user-pairing-sign")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    // check all parameters are given
+    if (isset($_GET["authkey"]))
+    {
+        if (isset($_GET["txid"]))
+        {
+            // run the pairing sign function
+            echo json_encode($USER->pairingSign($RETURN, $AUTHKEY, $_GET["txid"], $IP), JSON_PRETTY_PRINT);
+        }
+        else
+        {
+            $RETURN->answer = "Parameter 'txid' is missing";
+            $RETURN->bool = false;
+            
+            echo json_encode($RETURN, JSON_PRETTY_PRINT);
+        }
+    }
+    else
+    {
+        $RETURN->answer = "Parameter 'authkey' is missing";
+        $RETURN->bool = false;
+        
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    }
+    die();
 }

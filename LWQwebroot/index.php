@@ -9,6 +9,11 @@ This is very important for using a VPS!
 Also be sure to whitelist the Server IP on the Litecoin Node if you run it on a seperated device, otherwise whitelist localhost
 */
 
+// display errors
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ERROR);
+
 // first we check the parameter "method" is set
 if (!isset($_GET["method"])) 
 {
@@ -29,8 +34,7 @@ else
         header("Access-Control-Allow-Origin:*");
 
         // prepare the RETURN object
-        // the RETURN object will be lead tthrow the whole process and is in the end the final JSON output
-        // (immitate a call by referece function)
+        // the RETURN object will be lead throw the whole process and is at the end the final JSON output
         $RETURN = (object)array();
 
         // grep request IP
