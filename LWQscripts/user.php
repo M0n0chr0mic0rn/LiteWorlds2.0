@@ -12,7 +12,7 @@ if ($_GET["method"] == "user")
     $RETURN->bool = true;
     $RETURN->commands = array(
         "user-execute"=>"Sign a prepared action",
-        "user-iplock"=>"Turn on/off the IP lock, always IP locked",
+        "user-iplock"=>"Turn on or off the IP lock, always IP locked",
         "user-register"=>"Prepares a register action, always IP locked",
         "user-login"=>"Prepares a login action",
         "user-logout"=>"Logout the user and delete its authkey from database, no sign needed, always IP locked",
