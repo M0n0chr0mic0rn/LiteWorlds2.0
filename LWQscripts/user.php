@@ -18,7 +18,10 @@ if ($_GET["method"] == "user")
         "user-logout"=>"Logout the user and delete its authkey from database, no sign needed, always IP locked",
         "user-get"=>"Get public user data",
         "user-change-mail"=>"Prepares a mail change action, need to be signed from both Emails",
-        "user-change-pass"=>"Prepares a pass change action"
+        "user-change-pass"=>"Prepares a pass change action",
+        "user-pass-recovery"=>"Set a new password if it get lost, auth by username and email, always IP locked",
+        "user-pairing"=>"Start the self-custody pairing process",
+        "user-pairing-sign"=>"Complete the self-custody pairing process"
     );
 
     // print the RETURN as JSON
