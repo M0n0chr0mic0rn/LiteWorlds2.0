@@ -33,6 +33,7 @@ class Omnilite
 
     function test($address)
     {
+        // get utxo of foreign address
         $content = file_get_contents("https://litecoinspace.org/api/address/" . $address . "/utxo");
         $content = json_decode($content);
 
