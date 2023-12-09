@@ -21,11 +21,36 @@ class Omnilite
         try
         {
             self::$_db = new PDO("mysql:host=" . self::$_db_host . ";dbname=" . self::$_db_name, self::$_db_username, self::$_db_passwort);
+            self::$_node = new Node(self::$_rpc_user, self::$_rpc_pw, self::$_rpc_host, self::$_rpc_port);
+		    self::$_node_dev = new Node_Dev(self::$_rpc_user, self::$_rpc_pw, self::$_rpc_host, self::$_rpc_port);
         }
         catch(PDOException $e)
         {
-            echo "<br>DATABASE ERROR<br>".$e;
+            echo "<br>OMNILITE ERROR<br>".$e;
             die();
         }
+    }
+
+    function test($address)
+    {
+        $content = file_get_contents("https://litecoinspace.org/api/address/" . $address . "/utxo");
+        $content = json_decode($content);
+
+        echo json_encode($content, JSON_PRETTY_PRINT);
+
+        $input = (object)array();
+        $input->list = array();
+        $input->list[0] = array("txid"=>$content[0]->txid, "vout"=>$content[0]->vout);
+
+        $output = array();
+        $output[$address] = ($content[0]->value - 500) / 100000000;
+        $output[$address] = number_format($output[$address], 8, ".", "");
+
+        //$output["MU78ANEyiaAAjM4Z7HT8zTB3HWCzrXvM6i"] = "0.00005000";
+
+        var_dump($input, $output);
+
+        $rawtxid = self::$_node_dev->createrawtransaction($input->list, $output);
+        var_dump($rawtxid);
     }
 }

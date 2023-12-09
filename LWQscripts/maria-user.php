@@ -538,15 +538,41 @@ class User
                             }
 
                             if ($progress == 2)
+                        {
+                            // write new Email to user
+                            $stmt = self::$_db->prepare("UPDATE user SET Mail=:mail WHERE BINARY User=:user LIMIT 1");
+                            $stmt->bindParam(":mail", $data->Mail);
+                            $stmt->bindParam(":user", $data->User);
+                            $stmt->execute();
+
+                            if ($stmt->errorInfo()[0] == "00000")
                             {
+                                // delete from table data_change
+                                $stmt = self::$_db->prepare("DELETE FROM data_change WHERE BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal LIMIT 1");
+                                $stmt->bindParam(":copper", $copper);
+                                $stmt->bindParam(":jade", $jade);
+                                $stmt->bindParam(":crystal", $crystal);
+                                $stmt->execute();
+
                                 // return success page
                                 $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
                                 <img src=\"https://v2.liteworlds.quest/LWLA.png\">
-                                <h1>Step 2 has been made, the change will be applied in less then 1min</h1>
+                                <h1>Step 2 has been made, the change has been applied</h1>
                                 <script>setTimeout(function(){window.close()}, 5000)</script>";
 
                                 return $page;
                             }
+                            else
+                            {
+                                // return fail page
+                                $page = "<body style=\"background-color: black; color: deepskyblue; text-align: center;\">
+                                <img src=\"https://v2.liteworlds.quest/LWLA.png\">
+                                <h1>Internal write error, try again. Should it happen again please get in contact with us</h1>
+                                <script>setTimeout(function(){window.close()}, 5000)</script>";
+
+                                return $page;
+                            }
+                        }
                         }
                         else
                         {
@@ -1795,51 +1821,62 @@ class User
             // get user data
             $data = self::_get($authkey);
 
-            if ($data->LastIP == $IP)
+            if ($data)
             {
-                // check for already existing pairing request
-                $stmt = self::$_db->prepare("SELECT * FROM pairing WHERE BINARY User=:user LIMIT 1");
-                $stmt->bindParam(":user", $data->User);
-                $stmt->execute();
-                $pairing_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                if ($stmt->rowCount() == 0)
+                if ($data->LastIP == $IP)
                 {
-                    $amount = rand(10000, 20000) / 100000000;
-                    $amount = number_format($amount, 8, ".", "");
-
-                    $time = time() + 3600;
-
-                    $stmt = self::$_db->prepare("INSERT INTO pairing (User, Address, Amount, Time) VALUES (:user, :address, :amount, :time)");
+                    // check for already existing pairing request
+                    $stmt = self::$_db->prepare("SELECT * FROM pairing WHERE BINARY User=:user LIMIT 1");
                     $stmt->bindParam(":user", $data->User);
-                    $stmt->bindParam(":address", $address);
-                    $stmt->bindParam(":amount", $amount);
-                    $stmt->bindParam(":time", $time);
                     $stmt->execute();
+                    $pairing_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                    if ($stmt->errorInfo()[0] == "00000")
+                    if ($stmt->rowCount() == 0)
                     {
-                        $RETURN->answer = 'Pairing started, send the given amount to your self-custody address to sign pairing. You have 1 hour.';
-                        $RETURN->bool = true;
-                        $RETURN->amount = $amount;
-                        $RETURN->destination = $address;
+                        $amount = rand(10000, 20000) / 100000000;
+                        $amount = number_format($amount, 8, ".", "");
+
+                        $time = time() + 3600;
+
+                        $stmt = self::$_db->prepare("INSERT INTO pairing (User, Address, Amount, Time) VALUES (:user, :address, :amount, :time)");
+                        $stmt->bindParam(":user", $data->User);
+                        $stmt->bindParam(":address", $address);
+                        $stmt->bindParam(":amount", $amount);
+                        $stmt->bindParam(":time", $time);
+                        $stmt->execute();
+
+                        if ($stmt->errorInfo()[0] == "00000")
+                        {
+                            $RETURN->answer = 'Pairing started, send the given amount to your self-custody address to sign pairing. You have 1 hour.';
+                            $RETURN->bool = true;
+                            $RETURN->amount = $amount;
+                            $RETURN->destination = $address;
+                        }
+                        else
+                        {
+                            $RETURN->answer = "Internal Database Error, Pairing failed";
+                            $RETURN->bool = false;
+                        }
                     }
                     else
                     {
-                        $RETURN->answer = "Internal Database Error, Pairing failed";
+                        $RETURN->answer = "Pairing request already active, sign it by sending the offered amount: " . $pairing_data->Amount . " LTC to " . $pairing_data->Address;
                         $RETURN->bool = false;
                     }
                 }
                 else
                 {
-                    $RETURN->answer = "Pairing request already active, sign it by sending the offered amount: " . $pairing_data->Amount . " LTC to " . $pairing_data->Address;
+                    $RETURN->answer = "Pairing request is only possible from last login IP";
                     $RETURN->bool = false;
                 }
             }
             else
             {
-                $RETURN->answer = "Pairing request is only possible from last login IP";
+                // prepare and return a fail message
+                $RETURN->answer = "I found no data with the given AuthKey";
                 $RETURN->bool = false;
+
+                return $RETURN;
             }
         }
         else
@@ -1856,70 +1893,81 @@ class User
         // get user data
         $data = self::_get($authkey);
 
-        // get pairing data
-        $stmt = self::$_db->prepare("SELECT * FROM pairing WHERE BINARY User=:user LIMIT 1");
-        $stmt->bindParam(":user", $data->User);
-        $stmt->execute();
-
-        try
+        if ($data)
         {
-            // safe pairing data as object
-            $pairing_data = (object)$stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+            // get pairing data
+            $stmt = self::$_db->prepare("SELECT * FROM pairing WHERE BINARY User=:user LIMIT 1");
+            $stmt->bindParam(":user", $data->User);
+            $stmt->execute();
 
-            // create a bool which will be turned true if transaction has been found
-            $thing = false;
-
-            // get transaction content from litecoinspace.org
-            $content = file_get_contents("https://litecoinspace.org/api/address/" . $pairing_data->Address . "/txs");
-            $content = json_decode($content);
-
-            for ($a=0; $a < count($content); $a++)
+            try
             {
-                $element = $content[$a];
+                // safe pairing data as object
+                $pairing_data = (object)$stmt->fetchAll(PDO::FETCH_ASSOC)[0];
 
-                if ($element->txid == $txid)
+                // create a bool which will be turned true if transaction has been found
+                $thing = false;
+
+                // get transaction content from litecoinspace.org
+                $content = file_get_contents("https://litecoinspace.org/api/address/" . $pairing_data->Address . "/txs");
+                $content = json_decode($content);
+
+                for ($a=0; $a < count($content); $a++)
                 {
-                    for ($b=0; $b < count($element->vout); $b++)
-                    { 
-                        $subelement = $element->vout[$b];
+                    $element = $content[$a];
 
-                        // if vout address is the stored one and the amount fits and transaction is confirmed set thing to true
-                        if ($subelement->scriptpubkey_address == $pairing_data->Address && $element->status->confirmed && $pairing_data->Amount == number_format(($subelement->value / 100000000), 8, ".", ""))
-                        {
-                            $thing = true;
+                    if ($element->txid == $txid)
+                    {
+                        for ($b=0; $b < count($element->vout); $b++)
+                        { 
+                            $subelement = $element->vout[$b];
+
+                            // if vout address is the stored one and the amount fits and transaction is confirmed set thing to true
+                            if ($subelement->scriptpubkey_address == $pairing_data->Address && $element->status->confirmed && $pairing_data->Amount == number_format(($subelement->value / 100000000), 8, ".", ""))
+                            {
+                                $thing = true;
+                            }
                         }
                     }
                 }
-            }
 
-            if ($thing)
-            {
-                $stmt = self::$_db->prepare("UPDATE user SET PairingAddress=:pa WHERE BINARY User=:user LIMIT 1");
-                $stmt->bindParam(":pa", $pairing_data->Address);
-                $stmt->bindParam(":user", $data->User);
-                $stmt->execute();
-
-                if ($stmt->errorInfo()[0] == "00000")
+                if ($thing)
                 {
-                    $stmt = self::$_db->prepare("DELETE FROM pairing WHERE BINARY User=:user LIMIT 1");
+                    $stmt = self::$_db->prepare("UPDATE user SET PairingAddress=:pa WHERE BINARY User=:user LIMIT 1");
+                    $stmt->bindParam(":pa", $pairing_data->Address);
                     $stmt->bindParam(":user", $data->User);
                     $stmt->execute();
 
-                    $RETURN->answer = "Self custody pairing complete";
-                    $RETURN->bool = true;
+                    if ($stmt->errorInfo()[0] == "00000")
+                    {
+                        $stmt = self::$_db->prepare("DELETE FROM pairing WHERE BINARY User=:user LIMIT 1");
+                        $stmt->bindParam(":user", $data->User);
+                        $stmt->execute();
+
+                        $RETURN->answer = "Self custody pairing complete";
+                        $RETURN->bool = true;
+                    }
                 }
+                else
+                {
+                    $RETURN->answer = "Either the txid is incorrect or the amount is missmatching or the transaction has not yet been confirmed";
+                    $RETURN->bool = false;
+                }
+                
+                return $RETURN;
             }
-            else
+            catch (\Throwable $th)
             {
-                $RETURN->answer = "Either the txid is incorrect or the amount is missmatching or the transaction has not yet been confirmed";
+                $RETURN->answer = "No pairing action found";
                 $RETURN->bool = false;
+
+                return $RETURN;
             }
-            
-            return $RETURN;
         }
-        catch (\Throwable $th)
+        else
         {
-            $RETURN->answer = "No pairing action found";
+            // prepare and return a fail message
+            $RETURN->answer = "I found no data with the given AuthKey";
             $RETURN->bool = false;
 
             return $RETURN;
