@@ -1116,7 +1116,7 @@ class User
                 mail($mail, $betreff, $nachricht, $header);
 
                 // prepare and return success object
-                $RETURN->answer = "Your Login have been prepared, please sign your action via Email";
+                $RETURN->answer = "Your Login has been prepared, please sign your action via Email";
                 $RETURN->bool = true;
                 $RETURN->AuthKey = $authkey;
                 return $RETURN;
@@ -1881,7 +1881,7 @@ class User
         }
         else
         {
-            $RETURN->answer = "The address have to be a p2sh-segwit address, starting with 'M'";
+            $RETURN->answer = "The address must be a p2sh Segwit address and start with 'M'.";
             $RETURN->bool = false;
         }
 

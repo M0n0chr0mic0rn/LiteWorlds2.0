@@ -41,7 +41,37 @@ class NodeData
         return self::$_node->getmempoolentry($txid);
     }
 
-    function TxStreetPending()
+    function getPropertyList()
+    {
+        return self::$_node->omni_listproperties();
+    }
+
+    function getProperty($property)
+    {
+        return self::$_node->omni_getproperty($property);
+    }
+
+    function getPropertyLocations($property)
+    {
+        return self::$_node->omni_getallbalancesforid($property);
+    }
+
+    function getPropertyNFTLocations($property)
+    {
+        return self::$_node->omni_getnonfungibletokenranges($property);
+    }
+
+    function getNFT($property, $token)
+    {
+        return self::$_node->omni_getnonfungibletokendata($property, $token, $token);
+    }
+
+    function addressBalances($address)
+    {
+        return self::$_node->omni_getallbalancesforaddress($address);
+    }
+
+    /*function TxStreetPending()
     {
         $mempool = self::getMempool();
         $array = array();
@@ -67,44 +97,8 @@ class NodeData
             if ($a == 0) {
                 self::$_node->gettxout($$keys[$a], $index);
             }
-
-            //echo json_encode($array);
-            //var_dump($element);
         }
 
         return $array;
-
-        /*foreach($mempool as $entry)
-        {
-            var_dump($entry);
-            $object = (object)array();
-            $object->tx = $entry[""]
-            $array[$index] = $object;
-        }*/
-    }
-
-    function getTXtotal($txid)
-    {
-        $loop = true;
-        $index = 0;
-        $total = 0;
-
-        do
-        {
-            $entry = self::$_node->gettxout($txid, $index);
-
-            if (!is_null($entry))
-            {
-                $total += $entry["value"];
-                $index++;
-            }
-            else
-            {
-                $loop = false;
-            }
-        }
-        while($loop);
-
-        return $total;
-    }
+    }*/
 }

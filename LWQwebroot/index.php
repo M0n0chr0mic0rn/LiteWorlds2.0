@@ -12,7 +12,8 @@ Also be sure to whitelist the Server IP on the Litecoin Node if you run it on a 
 // display errors
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
-error_reporting(E_ERROR);
+//error_reporting(E_ERROR);
+error_reporting(E_ALL);
 
 // first we check the parameter "method" is set
 if (!isset($_GET["method"])) 
