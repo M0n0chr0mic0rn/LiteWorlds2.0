@@ -994,6 +994,9 @@ class User
     function login($RETURN, $user, $pass, $IP)
     {
         // PRECHECK
+        // force user to uppercase
+        $user = strtoupper($user);
+
         // check pass is sha512 hash
         if (strlen($pass) != strlen(preg_replace( "/[^a-zA-Z0-9]/", "", $pass)) || strlen($pass) != 128)
         {
@@ -1226,8 +1229,6 @@ class User
 
                 return $RETURN;
             }
-            
-            
         }
         else
         {

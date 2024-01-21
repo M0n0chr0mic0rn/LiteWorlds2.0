@@ -239,6 +239,237 @@ if ($_GET["method"] == "public-address-balances")
     die();
 }
 
+if ($_GET["method"] == "public-address-nft")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    if (isset($_GET["address"]))
+    {
+        echo json_encode($PUBLIC->addressNFTs($_GET["address"]), JSON_PRETTY_PRINT);
+    }
+    else
+    {
+        // prepare and print fail message as JSON
+        $RETURN->answer = "Parameter \"address\" is missing";
+        $RETURN->bool = false;
+
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    }
+    die();
+}
+
+if ($_GET["method"] == "public-payload-sendnft")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    if (isset($_GET["txid"]))
+    {
+        if (isset($_GET["property"]))
+        {
+            if (isset($_GET["tokenstart"]))
+            {
+                if (isset($_GET["tokenend"]))
+                {
+                    echo json_encode($PUBLIC->payloadSendNFT($RETURN, $_GET["txid"], (int)$_GET["property"], (int)$_GET["tokenstart"], (int)$_GET["tokenend"]), JSON_PRETTY_PRINT);
+                }
+                else
+                {
+                    // prepare and print fail message as JSON
+                    $RETURN->answer = "Parameter \"tokenend\" is missing";
+                    $RETURN->bool = false;
+    
+                    echo json_encode($RETURN, JSON_PRETTY_PRINT);
+                }
+            }
+            else
+            {
+                // prepare and print fail message as JSON
+                $RETURN->answer = "Parameter \"tokenstart\" is missing";
+                $RETURN->bool = false;
+    
+                echo json_encode($RETURN, JSON_PRETTY_PRINT);
+            }
+        }
+        else
+        {
+            // prepare and print fail message as JSON
+            $RETURN->answer = "Parameter \"property\" is missing";
+            $RETURN->bool = false;
+    
+            echo json_encode($RETURN, JSON_PRETTY_PRINT);
+        }
+    }
+    else
+    {
+        // prepare and print fail message as JSON
+        $RETURN->answer = "Parameter \"txid\" is missing";
+        $RETURN->bool = false;
+
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    }
+    die();
+}
+
+if ($_GET["method"] == "public-payload-mintproperty")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    if (isset($_GET["name"]))
+    {
+        if (isset($_GET["category"]))
+        {
+            if (isset($_GET["subcategory"]))
+            {
+                if (isset($_GET["structure"]))
+                {
+                    if (isset($_GET["content"]))
+                    {
+                        if (isset($_GET["contenttype"]))
+                        {
+                            if (isset($_GET["source"]))
+                            {
+                                if (isset($_GET["ecosystem"]))
+                                {
+                                    if (isset($_GET["tokentype"]))
+                                    {
+                                        if (isset($_GET["fixed"]))
+                                        {
+                                            if (isset($_GET["amount"]))
+                                            {
+                                                if (isset($_GET["txid"]))
+                                                {
+                                                    $data = (object)array();
+                                                    $data->content = $_GET["content"];
+                                                    $data->type = $_GET["type"];
+                                                    $data->source = $_GET["source"];
+                                                    $data->structure = $_GET["structure"];
+                                                    $data = json_encode($data);
+                                                    
+                                                    // add mint property payload
+                                                    echo json_encode($PUBLIC->payloadMintProperty($RETURN, $_GET["txid"], $_GET["name"], $_GET["category"], $_GET["subcategory"], $_GET["url"], $data, $_GET["ecosystem"], $_GET["tokentype"], $_GET["fixed"], $_GET["amount"]), JSON_PRETTY_PRINT);
+                                                }
+                                                else
+                                                {
+                                                    // prepare and print fail message as JSON
+                                                    $RETURN->answer = "Parameter \"txid\" is missing";
+                                                    $RETURN->bool = false;
+
+                                                    echo json_encode($RETURN, JSON_PRETTY_PRINT);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                // prepare and print fail message as JSON
+                                                $RETURN->answer = "Parameter \"amount\" is missing";
+                                                $RETURN->bool = false;
+
+                                                echo json_encode($RETURN, JSON_PRETTY_PRINT);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // prepare and print fail message as JSON
+                                            $RETURN->answer = "Parameter \"fixed\" is missing";
+                                            $RETURN->bool = false;
+
+                                            echo json_encode($RETURN, JSON_PRETTY_PRINT);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // prepare and print fail message as JSON
+                                        $RETURN->answer = "Parameter \"tokentype\" is missing";
+                                        $RETURN->bool = false;
+
+                                        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+                                    }
+                                }
+                                else
+                                {
+                                    // prepare and print fail message as JSON
+                                    $RETURN->answer = "Parameter \"ecosystem\" is missing";
+                                    $RETURN->bool = false;
+
+                                    echo json_encode($RETURN, JSON_PRETTY_PRINT);
+                                }
+                            }
+                            else
+                            {
+                                // prepare and print fail message as JSON
+                                $RETURN->answer = "Parameter \"source\" is missing";
+                                $RETURN->bool = false;
+
+                                echo json_encode($RETURN, JSON_PRETTY_PRINT);
+                            }
+                        }
+                        else
+                        {
+                            // prepare and print fail message as JSON
+                            $RETURN->answer = "Parameter \"contenttype\" is missing";
+                            $RETURN->bool = false;
+
+                            echo json_encode($RETURN, JSON_PRETTY_PRINT);
+                        }
+                    }
+                    else
+                    {
+                        // prepare and print fail message as JSON
+                        $RETURN->answer = "Parameter \"content\" is missing";
+                        $RETURN->bool = false;
+
+                        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+                    }
+                }
+                else
+                {
+                    // prepare and print fail message as JSON
+                    $RETURN->answer = "Parameter \"structure\" is missing";
+                    $RETURN->bool = false;
+
+                    echo json_encode($RETURN, JSON_PRETTY_PRINT);
+                }
+            }
+            else
+            {
+                // prepare and print fail message as JSON
+                $RETURN->answer = "Parameter \"subcategory\" is missing";
+                $RETURN->bool = false;
+
+                echo json_encode($RETURN, JSON_PRETTY_PRINT);
+            }
+        }
+        else
+        {
+            // prepare and print fail message as JSON
+            $RETURN->answer = "Parameter \"category\" is missing";
+            $RETURN->bool = false;
+
+            echo json_encode($RETURN, JSON_PRETTY_PRINT);
+        }
+    }
+    else
+    {
+        // prepare and print fail message as JSON
+        $RETURN->answer = "Parameter \"name\" is missing";
+        $RETURN->bool = false;
+
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    }
+    die();
+}
+
 /*if ($_GET["method"] == "txstreet-pending")
 {
     // set Content Type to JSON

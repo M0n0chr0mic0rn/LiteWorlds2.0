@@ -10,48 +10,58 @@ class Omnilite
     private static $_db;
 
     private static $_rpc_user = 'user';
-	private static $_rpc_pw = 'pw';
+	private static $_rpc_pw = 'pass';
 	private static $_rpc_host = '192.168.0.100';
 	private static $_rpc_port = '10370';
+    private static $_rpc_wallet;
 	private static $_node;
 	private static $_node_dev;
+    private static $_wallet_wizzard;
     
-    function __construct()
+    function __construct($userdata)
     {
         try
         {
+            self::$_rpc_wallet = "wallet/" . $userdata->User;
             self::$_db = new PDO("mysql:host=" . self::$_db_host . ";dbname=" . self::$_db_name, self::$_db_username, self::$_db_passwort);
-            self::$_node = new Node(self::$_rpc_user, self::$_rpc_pw, self::$_rpc_host, self::$_rpc_port);
-		    self::$_node_dev = new Node_Dev(self::$_rpc_user, self::$_rpc_pw, self::$_rpc_host, self::$_rpc_port);
+            self::$_node = new Node(self::$_rpc_user, self::$_rpc_pw, self::$_rpc_host, self::$_rpc_port, self::$_rpc_wallet);
+		    self::$_node_dev = new Node_Dev(self::$_rpc_user, self::$_rpc_pw, self::$_rpc_host, self::$_rpc_port, self::$_rpc_wallet);
+            self::$_wallet_wizzard = new Node(self::$_rpc_user, self::$_rpc_pw, self::$_rpc_host, self::$_rpc_port);
         }
-        catch(PDOException $e)
+        catch (PDOException $e)
         {
             echo "<br>OMNILITE ERROR<br>".$e;
             die();
         }
     }
 
-    function test($address)
+    function Wallet($RETURN)
     {
-        // get utxo of foreign address
-        $content = file_get_contents("https://litecoinspace.org/api/address/" . $address . "/utxo");
-        $content = json_decode($content);
+        $wallet = explode("/", self::$_rpc_wallet)[1];
 
-        echo json_encode($content, JSON_PRETTY_PRINT);
+        //check wallet is loaded
+        if (!self::$_node->help())
+        {
+            // if not load wallet
+            $a = self::$_wallet_wizzard->loadwallet($wallet);
 
-        $input = (object)array();
-        $input->list = array();
-        $input->list[0] = array("txid"=>$content[0]->txid, "vout"=>$content[0]->vout);
+            if (!$a)
+            {
+                // if wallet isnt present create it
+                self::$_wallet_wizzard->createwallet($wallet);
+            }
 
-        $output = array();
-        $output[$address] = ($content[0]->value - 500) / 100000000;
-        $output[$address] = number_format($output[$address], 8, ".", "");
+            self::Wallet($RETURN);
+        }
+        else
+        {
+            // wallet is loaded
 
-        //$output["MU78ANEyiaAAjM4Z7HT8zTB3HWCzrXvM6i"] = "0.00005000";
+            $RETURN->answer = "Wallet found";
+            $RETURN->bool = true;
+            $RETURN->addressgrouping = self::$_node->listaddressgroupings();
 
-        var_dump($input, $output);
-
-        $rawtxid = self::$_node_dev->createrawtransaction($input->list, $output);
-        var_dump($rawtxid);
+            return $RETURN;
+        }
     }
 }

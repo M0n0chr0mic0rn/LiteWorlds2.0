@@ -71,6 +71,114 @@ class NodeData
         return self::$_node->omni_getallbalancesforaddress($address);
     }
 
+    function addressNFTs($address)
+    {
+        return self::$_node->omni_getnonfungibletokens($address);
+    }
+
+    function payloadMintProperty($RETURN, $txid, $name, $category, $subcategory, $url, $data, $ecosystem, $tokentype, $fixed, $amount)
+    {
+        if ($tokentype == "indivisible")
+        {
+            $tokentype = 1;
+        }
+
+        if ($tokentype == "divisible")
+        {
+            $tokentype = 2;
+        }
+
+        if ($ecosystem == "main")
+        {
+            $ecosystem = 1;
+        }
+
+        if ($ecosystem == "test")
+        {
+            $ecosystem = 2;
+        }
+
+        $previd = 0;
+
+        if ($fixed == "fixed")
+        {
+            if ($tokentype == "nft")
+            {
+                $RETURN->answer = "NFT Property need to be managed, not fixed";
+                $RETURN->bool = false;
+
+                return $RETURN;
+            }
+            else
+            {
+                $payload = self::$_node->omni_createpayload_issuancefixed($ecosystem, $tokentype, $previd, $category, $subcategory, $name, $url, $data, $amount);
+                $modtxid = self::$_node->omni_createrawtx_multisig($txid, $payload, "M9gZJYf8MFSy3x7T7Puf3BkeTVL8wK2hVh", "M9gZJYf8MFSy3x7T7Puf3BkeTVL8wK2hVh");
+
+                if ($modtxid)
+                {
+                    $RETURN->payload = $payload;
+                    $RETURN->txid = $modtxid;
+                    $RETURN->bool = true;
+                }
+                else
+                {
+                    $RETURN->answer = "something went wrong";
+                    $RETURN->bool = false;
+                }
+
+                return $RETURN;
+            }
+        }
+
+        if ($fixed == "managed")
+        {
+            var_dump("CREATE MANAGED PROPERTY");
+        }
+
+        // add crowdsale
+    }
+
+    function payloadSendNFT($RETURN, $txid, $property, $tokenstart, $tokenend)
+    {
+        $payload = self::$_node->omni_createpayload_sendnonfungible($property, $tokenstart, $tokenend);
+        $modtxid = self::$_node->omni_createrawtx_opreturn($txid, $payload);
+
+        if ($modtxid)
+        {
+            $RETURN->payload = $payload;
+            $RETURN->txid = $modtxid;
+            $RETURN->bool = true;
+        }
+        else
+        {
+            $RETURN->answer = "something went wrong";
+            $RETURN->bool = false;
+        }
+
+        return $RETURN;
+    }
+
+    function mempoolSubmit($RETURN, $txid)
+    {
+        $final = self::$_node->sendrawtransaction($txid);
+
+        //var_dump($final);
+
+        if ($final)
+        {
+            $RETURN->answer = "your raw transaction have been succesfully submited to the Litecoin mempool";
+            $RETURN->bool = true;
+            $RETURN->txid = $final;
+        }
+        else
+        {
+            $RETURN->answer = "Something went wrong";
+            $RETURN->bool = false;
+        }
+
+        return $RETURN;
+    }
+
     /*function TxStreetPending()
     {
         $mempool = self::getMempool();

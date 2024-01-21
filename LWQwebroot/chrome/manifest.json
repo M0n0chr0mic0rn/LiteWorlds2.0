@@ -1,0 +1,23 @@
+{
+    "name": "LiteWorlds_SC",
+    "version": "0.0.1",
+    "manifest_version": 3,
+    "icons": {
+        "128": "LWLA.png"
+    },
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "permissions": [
+        "storage"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": ["file://*/*", "https://v2.liteworlds.quest/*"],
+            "js": ["content.js"]
+        }
+    ]
+}

@@ -10,10 +10,10 @@ Also be sure to whitelist the Server IP on the Litecoin Node if you run it on a 
 */
 
 // display errors
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+ini_set('display_errors', 0);
+//ini_set('display_startup_errors', 1);
 //error_reporting(E_ERROR);
-error_reporting(E_ALL);
+//error_reporting(E_ALL);
 
 // first we check the parameter "method" is set
 if (!isset($_GET["method"])) 
@@ -37,9 +37,24 @@ else
         // prepare the RETURN object
         // the RETURN object will be lead throw the whole process and is at the end the final JSON output
         $RETURN = (object)array();
+        $RETURN->answer = "INIT";
+        $RETURN->bool = false;
 
         // grep request IP
         $IP = $_SERVER["REMOTE_ADDR"];
+
+        // Include the Libarys
+        // COUNTER
+        require_once("../LWQscripts/maria-counter.php");
+        $COUNTER = new Counter;
+
+        // PUBLIC
+        require_once("../LWQscripts/node-data.php");
+        $PUBLIC = new NodeData;
+
+        // USER
+        require_once("../LWQscripts/maria-user.php");
+        $USER = new User;
 
         // AuthKey Security
         if (isset($_GET["authkey"]))
@@ -50,6 +65,24 @@ else
                 {
                     // define AUTHKEY
                     $AUTHKEY = $_GET["authkey"];
+
+                    // get userdata
+                    $userdata = $USER->get($RETURN, $AUTHKEY, $IP);
+
+                    if ($userdata->bool)
+                    {
+                        // OMNILITE
+                        require_once("../LWQscripts/maria-omnilite.php");
+                        $OMNILITE = new Omnilite($userdata->data);
+                    }
+                    else
+                    {
+                        // set Content Type to JSON
+                        header("Content-type: application/json; charset=utf-8");
+
+                        echo json_encode($userdata, JSON_PRETTY_PRINT);
+                        die();
+                    }
                 }
                 else
                 {
@@ -75,23 +108,6 @@ else
                 die();
             }
         }
-
-        // Include the Libarys
-        // COUNTER
-        require_once("../LWQscripts/maria-counter.php");
-        $COUNTER = new Counter;
-
-        // PUBLIC
-        require_once("../LWQscripts/node-data.php");
-        $PUBLIC = new NodeData;
-
-        // USER
-        require_once("../LWQscripts/maria-user.php");
-        $USER = new User;
-
-        // OMNILITE
-        require_once("../LWQscripts/maria-omnilite.php");
-        $OMNILITE = new Omnilite;
 
         // Call the header files
         include("../LWQscripts/public.php");
