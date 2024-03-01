@@ -535,7 +535,7 @@ function displayTokens()
                 dex.style.marginTop = "0.37rem"
                 dex.onclick = function()
                 {
-                    listDEX(tokenelement)
+                    displaylistDEX(tokenelement)
                 }
             })
         }
