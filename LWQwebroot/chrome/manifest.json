@@ -1,23 +1,34 @@
 {
-    "name": "LiteWorlds_SC",
+    "name": "LiteWorldsQuest Wallet",
     "version": "0.0.1",
     "manifest_version": 3,
-    "icons": {
+    "icons":
+    {
         "128": "LWLA.png"
     },
-    "action": {
+    "action":
+    {
         "default_popup": "popup.html"
     },
-    "permissions": [
-        "storage"
+    "permissions":
+    [
+        "storage",
+        "tabs"
     ],
-    "background": {
-        "service_worker": "background.js"
+    "background":
+    {
+        "service_worker": "background.js",
+        "type": "module"
     },
-    "content_scripts": [
+    "content_scripts":
+    [
         {
-            "matches": ["file://*/*", "https://v2.liteworlds.quest/*"],
+            "matches": ["https://v2.liteworlds.quest/*", "file://*/*"],
             "js": ["content.js"]
         }
-    ]
+    ],
+    "externally_connectable":
+    {
+        "matches": ["https://*/*", "file://*/*"]
+    }
 }

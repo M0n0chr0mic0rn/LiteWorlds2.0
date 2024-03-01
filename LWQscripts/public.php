@@ -116,6 +116,19 @@ if ($_GET["method"] == "public-get-propertylist")
     die();
 }
 
+if ($_GET["method"] == "public-get-dex")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    echo json_encode($PUBLIC->getDEX(), JSON_PRETTY_PRINT);
+
+    die();
+}
+
 if ($_GET["method"] == "public-get-property")
 {
     // set Content Type to JSON
@@ -262,6 +275,62 @@ if ($_GET["method"] == "public-address-nft")
     die();
 }
 
+if ($_GET["method"] == "public-payload-listdex")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    if (isset($_GET["txid"]))
+    {
+        if (isset($_GET["property"]))
+        {
+            if (isset($_GET["amount"]))
+            {
+                if (isset($_GET["desire"]))
+                {
+                    echo json_encode($PUBLIC->payloadListDEX($RETURN, $_GET["txid"], (int)$_GET["property"], $_GET["amount"], $_GET["desire"]), JSON_PRETTY_PRINT);
+                }
+                else
+                {
+                    // prepare and print fail message as JSON
+                    $RETURN->answer = "Parameter \"desire\" is missing";
+                    $RETURN->bool = false;
+    
+                    echo json_encode($RETURN, JSON_PRETTY_PRINT);
+                }
+            }
+            else
+            {
+                // prepare and print fail message as JSON
+                $RETURN->answer = "Parameter \"amount\" is missing";
+                $RETURN->bool = false;
+    
+                echo json_encode($RETURN, JSON_PRETTY_PRINT);
+            }
+        }
+        else
+        {
+            // prepare and print fail message as JSON
+            $RETURN->answer = "Parameter \"property\" is missing";
+            $RETURN->bool = false;
+    
+            echo json_encode($RETURN, JSON_PRETTY_PRINT);
+        }
+    }
+    else
+    {
+        // prepare and print fail message as JSON
+        $RETURN->answer = "Parameter \"txid\" is missing";
+        $RETURN->bool = false;
+
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    }
+    die();
+}
+
 if ($_GET["method"] == "public-payload-sendnft")
 {
     // set Content Type to JSON
@@ -288,6 +357,96 @@ if ($_GET["method"] == "public-payload-sendnft")
     
                     echo json_encode($RETURN, JSON_PRETTY_PRINT);
                 }
+            }
+            else
+            {
+                // prepare and print fail message as JSON
+                $RETURN->answer = "Parameter \"tokenstart\" is missing";
+                $RETURN->bool = false;
+    
+                echo json_encode($RETURN, JSON_PRETTY_PRINT);
+            }
+        }
+        else
+        {
+            // prepare and print fail message as JSON
+            $RETURN->answer = "Parameter \"property\" is missing";
+            $RETURN->bool = false;
+    
+            echo json_encode($RETURN, JSON_PRETTY_PRINT);
+        }
+    }
+    else
+    {
+        // prepare and print fail message as JSON
+        $RETURN->answer = "Parameter \"txid\" is missing";
+        $RETURN->bool = false;
+
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    }
+    die();
+}
+
+if ($_GET["method"] == "public-payload-sendtoken")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    if (isset($_GET["txid"]))
+    {
+        if (isset($_GET["property"]))
+        {
+            if (isset($_GET["amount"]))
+            {
+                echo json_encode($PUBLIC->payloadSendToken($RETURN, $_GET["txid"], (int)$_GET["property"], $_GET["amount"]), JSON_PRETTY_PRINT);
+            }
+            else
+            {
+                // prepare and print fail message as JSON
+                $RETURN->answer = "Parameter \"amount\" is missing";
+                $RETURN->bool = false;
+    
+                echo json_encode($RETURN, JSON_PRETTY_PRINT);
+            }
+        }
+        else
+        {
+            // prepare and print fail message as JSON
+            $RETURN->answer = "Parameter \"property\" is missing";
+            $RETURN->bool = false;
+    
+            echo json_encode($RETURN, JSON_PRETTY_PRINT);
+        }
+    }
+    else
+    {
+        // prepare and print fail message as JSON
+        $RETURN->answer = "Parameter \"txid\" is missing";
+        $RETURN->bool = false;
+
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    }
+    die();
+}
+
+if ($_GET["method"] == "public-payload-dex-accept")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    if (isset($_GET["txid"]))
+    {
+        if (isset($_GET["property"]))
+        {
+            if (isset($_GET["amount"]))
+            {
+                echo json_encode($PUBLIC->payloadDEXaccept($RETURN, $_GET["txid"], (int)$_GET["property"], $_GET["amount"]), JSON_PRETTY_PRINT);
             }
             else
             {
@@ -470,7 +629,7 @@ if ($_GET["method"] == "public-payload-mintproperty")
     die();
 }
 
-/*if ($_GET["method"] == "txstreet-pending")
+if ($_GET["method"] == "public-inscriptions")
 {
     // set Content Type to JSON
     header("Content-type: application/json; charset=utf-8");
@@ -478,8 +637,42 @@ if ($_GET["method"] == "public-payload-mintproperty")
     // increase the method counter
     $COUNTER->increase($_GET["method"]);
 
-    // call the getMempool function from the Public class and print it as JSON
-    echo json_encode($PUBLIC->TxStreetPending());
-
+    if (isset($_GET["page"]))
+    {
+        $page = $_GET["page"];
+    }
+    else
+    {
+        $page = 0;
+    }
+    
+    // get latest inscriptions
+    echo json_encode($PUBLIC->inscriptions($RETURN, $page), JSON_PRETTY_PRINT);
+    
     die();
-}*/
+}
+
+if ($_GET["method"] == "public-inscription-by-number")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    if (isset($_GET["number"]))
+    {
+        // get inscriptions by number
+        echo json_encode($PUBLIC->inscriptionByNumber($RETURN, $_GET["number"]), JSON_PRETTY_PRINT);
+    }
+    else
+    {
+        // prepare and print fail message as JSON
+        $RETURN->answer = "Parameter \"number\" is missing";
+        $RETURN->bool = false;
+
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    }
+    
+    die();
+}

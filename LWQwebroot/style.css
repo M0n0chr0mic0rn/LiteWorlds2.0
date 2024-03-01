@@ -1,0 +1,202 @@
+/* width */
+::-webkit-scrollbar
+{
+    width: 9px;
+}
+  
+/* Track */
+::-webkit-scrollbar-track 
+{
+    width: 0;
+}
+   
+/* Handle */
+::-webkit-scrollbar-thumb
+{
+    background: #59071e; 
+    border-radius: 10px;
+}
+  
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover 
+{
+    background-image: linear-gradient(to right, #730a38, crimson, #59071e);
+}
+
+html
+{
+    overflow: visible;
+}
+
+body
+{
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    
+    background-image: url("background.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    overflow: hidden;
+}
+
+header
+{
+    height: 10dvh;
+
+    display: flex;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 9;
+}
+
+main
+{
+    padding: 0 2rem 1rem 2rem;
+}
+
+.head_text
+{
+    background: linear-gradient(to right, black, #730a38, crimson, #59071e, black);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.content
+{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    display: none;
+    height: 90dvh;
+    width: 100vw;
+
+    overflow-y: scroll;
+    z-index: 1;
+}
+
+.wrapper
+{
+    max-width: 1200px;
+    width: -webkit-fill-available;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.NFT
+{
+    float: left;
+    width: 14.37rem;
+    height: 23rem;
+    border: 1px solid dimgrey;
+    border-radius: 7px;
+    background-image: linear-gradient(to right, rgba(37,37,37,0.5), rgba(55,55,55,0.5));
+    text-align: center;
+    margin-left: 0.37rem;
+    margin-top: 0.37rem;
+    color: deepskyblue;
+    font-weight: bold;
+}
+
+.NFT:hover
+{
+    border: 1px solid crimson;
+}
+
+.NFT_CONTENT
+{
+    margin-left: 0;
+    max-width: 14.37rem;
+    height: 14.37rem;
+    background-color: transparent;
+}
+
+.NFT_TEXT
+{
+    font-weight: bold;
+    color: deepskyblue;
+}
+
+.button 
+{
+    padding: 0.6em 2em;
+    border: none;
+    outline: none;
+    color: rgb(255, 255, 255);
+    background: #111;
+    cursor: pointer;
+    position: relative;
+    z-index: 0;
+    border-radius: 10px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+  
+.button:before 
+{
+    content: "";
+    background: linear-gradient(
+      45deg,
+      #ff0000,
+      #ff7300,
+      #fffb00,
+      #48ff00,
+      #00ffd5,
+      #002bff,
+      #7a00ff,
+      #ff00c8,
+      #ff0000
+    );
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    background-size: 400%;
+    z-index: -1;
+    filter: blur(5px);
+    -webkit-filter: blur(5px);
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    animation: glowing-button-85 20s linear infinite;
+    transition: opacity 0.3s ease-in-out;
+    border-radius: 10px;
+}
+  
+@keyframes glowing-button-85 
+{
+    0%
+    {
+        background-position: 0 0;
+    }
+    50%
+    {
+        background-position: 400% 0;
+    }
+    100% 
+    {
+        background-position: 0 0;
+    }
+}
+  
+.button:after 
+{
+    z-index: -1;
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #222;
+    left: 0;
+    top: 0;
+    border-radius: 10px;
+}
+
+@media screen and (max-width: 800px)
+{
+    
+}

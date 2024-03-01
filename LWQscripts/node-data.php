@@ -46,6 +46,11 @@ class NodeData
         return self::$_node->omni_listproperties();
     }
 
+    function getDEX()
+    {
+        return self::$_node->omni_getactivedexsells();
+    }
+
     function getProperty($property)
     {
         return self::$_node->omni_getproperty($property);
@@ -74,6 +79,30 @@ class NodeData
     function addressNFTs($address)
     {
         return self::$_node->omni_getnonfungibletokens($address);
+    }
+
+    function payloadListDEX($RETURN, $txid, $property, $amount, $desire)
+    {
+        $paymentwindow = 21;
+        $minacceptfee = "0.00000100";
+        $action = 1;
+
+        $payload = self::$_node->omni_createpayload_dexsell($property, $amount, $desire, $paymentwindow, $minacceptfee, $action);
+        $modtxid = self::$_node->omni_createrawtx_opreturn($txid, $payload);
+
+        if ($modtxid)
+        {
+            $RETURN->payload = $payload;
+            $RETURN->txid = $modtxid;
+            $RETURN->bool = true;
+        }
+        else
+        {
+            $RETURN->answer = "something went wrong";
+            $RETURN->bool = false;
+        }
+
+        return $RETURN;
     }
 
     function payloadMintProperty($RETURN, $txid, $name, $category, $subcategory, $url, $data, $ecosystem, $tokentype, $fixed, $amount)
@@ -158,6 +187,46 @@ class NodeData
         return $RETURN;
     }
 
+    function payloadSendToken($RETURN, $txid, $property, $amount)
+    {
+        $payload = self::$_node->omni_createpayload_simplesend($property, $amount);
+        $modtxid = self::$_node->omni_createrawtx_opreturn($txid, $payload);
+
+        if ($modtxid)
+        {
+            $RETURN->payload = $payload;
+            $RETURN->txid = $modtxid;
+            $RETURN->bool = true;
+        }
+        else
+        {
+            $RETURN->answer = "something went wrong";
+            $RETURN->bool = false;
+        }
+
+        return $RETURN;
+    }
+
+    function payloadDEXaccept($RETURN, $txid, $property, $amount)
+    {
+        $payload = self::$_node->omni_createpayload_dexaccept($property, $amount);
+        $modtxid = self::$_node->omni_createrawtx_opreturn($txid, $payload);
+
+        if ($modtxid)
+        {
+            $RETURN->payload = $payload;
+            $RETURN->txid = $modtxid;
+            $RETURN->bool = true;
+        }
+        else
+        {
+            $RETURN->answer = "something went wrong";
+            $RETURN->bool = false;
+        }
+
+        return $RETURN;
+    }
+
     function mempoolSubmit($RETURN, $txid)
     {
         $final = self::$_node->sendrawtransaction($txid);
@@ -176,6 +245,33 @@ class NodeData
             $RETURN->bool = false;
         }
 
+        return $RETURN;
+    }
+
+    function inscriptions($RETURN, $page)
+    {
+        $curl = curl_init("http://192.168.0.100:80/inscriptions/" . $page);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Accept: application/json'));
+        $response = curl_exec($curl);
+
+        $RETURN->answer = "Here are the latest inscriptions.";
+        $RETURN->bool = true;
+        $RETURN->page = (int)$page;
+        $RETURN->inscriptions = json_decode($response)->inscriptions;
+        return $RETURN;
+    }
+
+    function inscriptionByNumber($RETURN, $number)
+    {
+        $curl = curl_init("http://192.168.0.100:80/inscription/" . $number);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Accept: application/json'));
+        $response = curl_exec($curl);
+
+        $RETURN->answer = "Here is the the inscription.";
+        $RETURN->bool = true;
+        $RETURN->inscription = json_decode($response);
         return $RETURN;
     }
 

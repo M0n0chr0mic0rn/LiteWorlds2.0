@@ -10,10 +10,10 @@ Also be sure to whitelist the Server IP on the Litecoin Node if you run it on a 
 */
 
 // display errors
-ini_set('display_errors', 0);
+ini_set('display_errors', 1);
 //ini_set('display_startup_errors', 1);
-//error_reporting(E_ERROR);
-//error_reporting(E_ALL);
+error_reporting(E_ERROR);
+error_reporting(E_ALL);
 
 // first we check the parameter "method" is set
 if (!isset($_GET["method"])) 
@@ -73,7 +73,7 @@ else
                     {
                         // OMNILITE
                         require_once("../LWQscripts/maria-omnilite.php");
-                        $OMNILITE = new Omnilite($userdata->data);
+                        $OMNILITE = new Omnilite($userdata->data->User);
                     }
                     else
                     {
@@ -106,6 +106,17 @@ else
 
                 echo json_encode($RETURN, JSON_PRETTY_PRINT);
                 die();
+            }
+        }
+
+        // OMNILITE SIGN
+        if ($_GET["method"] == "omnilite-sign")
+        {
+            if (isset($_GET["user"]))
+            {
+                // OMNILITE
+                require_once("../LWQscripts/maria-omnilite.php");
+                $OMNILITE = new Omnilite($_GET["user"]);
             }
         }
 

@@ -4,6 +4,7 @@ $PUBLIC = new NodeData();
 $RETURN = (object)array();
 
 header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: *');
 header("Content-type: application/json; charset=utf-8");
 
 $post = file_get_contents('php://input');

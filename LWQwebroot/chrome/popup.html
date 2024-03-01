@@ -1,235 +1,425 @@
 <!DOCTYPE html>
-<html style="width: 20em; height: 27.3em; background-color: black; color: #4AF626; text-align: center;font-size: 1.37em;">
-    <body style="overflow: hidden;">
-        <div id="LWQ_SC_create_passwd" style="display: none;">
-            <p style="font-size: 1.37em;">
-                At first let's setup a Password for this Extension<br><br>
-                Write this Password down!<br>
-                There is no way to recover!<br><br>
-                This Password is part of your final Seed!<br>
-                If you want to recover your Wallet you have to use the same Password!<br><br>
-                By continue you accept that LiteWorldsQuest is not able to help you with lost funds!
-            </p>
-
-            <table style="width: 100%;">
-                <tr>
-                    <td>enter Password</td>
-                    <td><input class="input-terminal" id="LWQ_SC_create_passwd_passwd" type="password"></td>
-                </tr>
-                <tr>
-                    <td>re-enter Password</td>
-                    <td><input class="input-terminal" id="LWQ_SC_create_passwd_prove" type="password"></td>
-                </tr>
-            </table>
-
-            <button id="LWQ_SC_create_passwd_button" class="button-terminal" style="margin-top: 1.5em; margin-bottom: 2em;">Save Password</button>
-        </div>
-
-        <div id="LWQ_SC_enter_passwd" style="display: none;">
-            <p style="font-size: 1.37em;">Enter your Password to unlock the Extension</p>
-        
-            <input id="LWQ_SC_enter_passwd_passwd" class="input-terminal" type="password">
-            <br>
-            <button id="LWQ_SC_enter_passwd_button" class="button-terminal" style="margin-top: 2em; margin-bottom: 3em;">unlock</button>
-        </div>
-
-        <div id="LWQ_SC_mnemonic" style="display: none;">
-            <p style="font-size: 1.37em;">Do you need a 12 words Mnemonic-Seed?<br>Or do you have one?</p>
-            <button id="LWQ_SC_mnemonic_button_create" class="button-terminal" style="margin-top: 2em; margin-bottom: 2em;">Create Mnemonic-Seed</button>
-            <button id="LWQ_SC_mnemonic_button_enter" class="button-terminal" style="margin-bottom: 3em;">Enter Mnemonic-Seed</button>
-        </div>
-
-        <div id="LWQ_SC_mnemonic_create" style="display: none;">
-            <p style="font-size: 1.37em;">
-                Write down these 12 words you will need them to recover your Wallet.<br>
-            </p>
-            <p>
-                Take care about this data, in combination with your password it is the only way to recover your funds and token!<br>
-                LiteWorldsQuest wont be able to help!
-            </p>
-            <table id="LWQ_SC_mnemonic_create_table" style="width: 100%; font-size: 1.37em;">
-                <tr>
-                    <td>1</td>
-                    <td id="LWQ_SC_mnemonic_create_table_0"></td>
-                    <td>2</td>
-                    <td id="LWQ_SC_mnemonic_create_table_1"></td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td id="LWQ_SC_mnemonic_create_table_2"></td>
-                    <td>4</td>
-                    <td id="LWQ_SC_mnemonic_create_table_3"></td>
-                </tr>
-                <tr>
-                    <td>5</td>
-                    <td id="LWQ_SC_mnemonic_create_table_4"></td>
-                    <td>6</td>
-                    <td id="LWQ_SC_mnemonic_create_table_5"></td>
-                </tr>
-                <tr>
-                    <td>7</td>
-                    <td id="LWQ_SC_mnemonic_create_table_6"></td>
-                    <td>8</td>
-                    <td id="LWQ_SC_mnemonic_create_table_7"></td>
-                </tr>
-                <tr>
-                    <td>9</td>
-                    <td id="LWQ_SC_mnemonic_create_table_8"></td>
-                    <td>10</td>
-                    <td id="LWQ_SC_mnemonic_create_table_9"></td>
-                </tr>
-                <tr>
-                    <td>11</td>
-                    <td id="LWQ_SC_mnemonic_create_table_10"></td>
-                    <td>12</td>
-                    <td id="LWQ_SC_mnemonic_create_table_11"></td>
-                </tr>
-            </table>
-
-            <p>In the next step you need to Double Check 3 words for your own security.
-                <br>Hit Start Seed Prove if you are ready to continue.
-            </p>
-            <button id="LWQ_SC_mnemonic_create_button" class="button-crimson" disabled>Start Seed Prove (10)</button>
-        </div>
-
-        <div id="LWQ_SC_mnemonic_prove" style="display: none;">
-            <p id="LWQ_SC_mnemonic_prove_word"></p>
-            <input id="LWQ_SC_mnemonic_prove_input" class="input-terminal" type="text">
-            <br>
-            <button id="LWQ_SC_mnemonic_prove_button" class="button-terminal" style="margin-top: 2em; margin-bottom: 3em;">Double Check</button>
-        </div>
-
-        <div id="LWQ_SC_mnemonic_enter" style="display: none;">
-            <p>Enter your 12 word Mnemonic-Seed and hit the Button</p>
-            <table id="LWQ_SC_mnemonic_enter_table"></table>
-            <button id="LWQ_SC_mnemonic_enter_button" class="button-crimson" style="margin-top: 2em; margin-bottom: 3em;" disabled>Not a Mnemonic-Seed</button>
-        </div>
-
-        <div id="LWQ_SC_NAV" style="display: none; width: 100%; margin-top: 0.37em; margin-bottom: 1.37em;">
-            <select id="LWQ_SC_NAV_SELECT" class="select-terminal">
-                <optgroup label="NATIVE LITECOIN">
-                    <option value="WALLET" style="text-align: left;">Wallet</option>
-                </optgroup>
-                <optgroup label="OMNILITE">
-                    <option value="PROPERTIES" style="text-align: left;">Properties</option>
-                    <option value="TOKEN" style="text-align: left;">Token</option>
-                    <option value="NFT" style="text-align: left;">NFT</option>
-                </optgroup>
-                <optgroup label="MARKET">
-                    <option value="DEX" style="text-align: left;">dedicated Exchange</option>
-                    <option value="NFTTRADERBOT" style="text-align: left;">NFT Trader Bot</option>
-                </optgroup>
-            </select>
-            <!--<button id="LWQ_SC_NAV_WALLET" class="button-terminal">Wallet</button>
-            <button id="LWQ_SC_NAV_COINCONTROL" class="button-terminal">CoinControl</button>
-            <button id="LWQ_SC_NAV_TOKEN" class="button-terminal">Token</button>
-            <button id="LWQ_SC_NAV_NFT" class="button-terminal">NFT</button>-->
-        </div>
-
-        <div id="LWQ_SC_WALLET" style="display: none;">
-            <p id="LWQ_SC_WALLET_address"></p>
-            <p id="LWQ_SC_WALLET_balance"></p>
-            <p id="LWQ_SC_WALLET_pending"></p>
-
-            <h2>Coin Control</h2>
-            <div id="LWQ_SC_COINCONTROL" style="overflow-y: scroll; height: 22em;">
-            
+<html style="width: 20em; height: 30rem; max-height: 30em; background-color: black; color: whitesmoke; text-align: center;font-size: 1rem;">
+    <body>
+        <header>
+            <div id="LWQ_SC_NAV" style="display: none; width: 100%; margin-top: 0.37em; margin-bottom: 0.37em;">
+                <select id="LWQ_SC_NAV_SELECT" class="select-terminal">
+                    <optgroup label="Litecoin">
+                        <option value="Wallet" style="text-align: left;">Wallet</option>
+                    </optgroup>
+                    <optgroup label="Assets">
+                        <option value="OmniliteProperties" style="text-align: left;">Omnilite Properties</option>
+                        <option value="OmniliteToken" style="text-align: left;">Omnilite Token</option>
+                        <option value="OmniliteNFT" style="text-align: left;">Omnilite NFTs</option>
+                        <option value="OrdinalNFT" style="text-align: left;">Ordinal NFTs</option>
+                    </optgroup>
+                    <optgroup label="Market">
+                        <option value="OmniliteDEX" style="text-align: left;">Omnilite Token Exchange</option>
+                        <option value="OmniliteNFTm" style="text-align: left;">Omnilite NFTs</option>
+                        <option value="OrdinalNFTm" style="text-align: left;">Ordinal NFTs</option>
+                    </optgroup>
+                </select>
             </div>
-        </div>
+        </header>
 
-        <div id="LWQ_SC_SIGN" style="display: none;">
-            <p id="LWQ_SC_SIGN_txid" style="word-wrap: break-word;"></p>
-            <p id="LWQ_SC_SIGN_amount"></p>
-            <p id="LWQ_SC_SIGN_destination"></p>
-            <p id="LWQ_SC_SIGN_omnilite"></p>
-            <button id="LWQ_SC_SIGN_button" class="button-terminal">SIGN</button>
-            <p id="LWQ_SC_SIGN_output"></p>
-        </div>
-
-        <div id="LWQ_SC_PROPERTIES" style="display: none;">
-            <button id="LWQ_SC_PROPERTIES_CREATE" class="button-terminal">Mint new Property</button>
-            <br>
-            <div id="LWQ_SC_PROPERTYLIST"></div>
-            <div id="LWQ_SC_CREATEPROPERTY" style="overflow-y: scroll; height: 30em; display: inline-block;"></div>
-        </div>
-
-        <div id="LWQ_SC_TOKEN" style="display: none;">
+        <main>
+            <div id="LWQ_SC_create_passwd" style="display: none;">
+                <p style="font-size: 1.37em;">
+                    At first let's setup a Password for this Extension<br><br>
+                    Write this Password down!<br>
+                    There is no way to recover!<br><br>
+                    This Password is part of your final Seed!<br>
+                    If you want to recover your Wallet you have to use the same Password!<br><br>
+                    By continue you accept that LiteWorldsQuest is not able to help you with lost funds!
+                </p>
+    
+                <table style="width: 100%;">
+                    <tr>
+                        <td>enter Password</td>
+                        <td><input class="input-terminal" id="LWQ_SC_create_passwd_passwd" type="password"></td>
+                    </tr>
+                    <tr>
+                        <td>re-enter Password</td>
+                        <td><input class="input-terminal" id="LWQ_SC_create_passwd_prove" type="password"></td>
+                    </tr>
+                </table>
+    
+                <button id="LWQ_SC_create_passwd_button" class="button-terminal" style="margin-top: 1.5em; margin-bottom: 2em;">Save Password</button>
+            </div>
+    
+            <div id="LWQ_SC_enter_passwd" style="display: none;">
+                <div class="box">
+                    <form>
+                        <span class="text-center">Unlock Extension</span>
+                        <div class="input-container">
+                            <input id="LWQ_SC_enter_passwd_passwd" type="password" required=""/>
+                            <label>Password</label>		
+                        </div>
+                        <button id="LWQ_SC_enter_passwd_button" class="button" style="margin-top: 1.37em; font-weight: bolder;">UNLOCK</button>
+                    </form>	
+                </div>           
+            </div>
+    
+            <div id="LWQ_SC_mnemonic" style="display: none;">
+                <p style="font-size: 1.37em;">Do you need a 12 words Mnemonic-Seed?<br>Or do you have one?</p>
+                <button id="LWQ_SC_mnemonic_button_create" class="button-terminal" style="margin-top: 2em; margin-bottom: 2em;">Create Mnemonic-Seed</button>
+                <button id="LWQ_SC_mnemonic_button_enter" class="button-terminal" style="margin-bottom: 3em;">Enter Mnemonic-Seed</button>
+            </div>
+    
+            <div id="LWQ_SC_mnemonic_create" style="display: none;">
+                <p style="font-size: 1.37em;">
+                    Write down these 12 words you will need them to recover your Wallet.<br>
+                </p>
+                <p>
+                    Take care about this data, in combination with your password it is the only way to recover your funds and token!<br>
+                    LiteWorldsQuest wont be able to help!
+                </p>
+                <table id="LWQ_SC_mnemonic_create_table" style="width: 100%; font-size: 1.37em;">
+                    <tr>
+                        <td>1</td>
+                        <td id="LWQ_SC_mnemonic_create_table_0"></td>
+                        <td>2</td>
+                        <td id="LWQ_SC_mnemonic_create_table_1"></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td id="LWQ_SC_mnemonic_create_table_2"></td>
+                        <td>4</td>
+                        <td id="LWQ_SC_mnemonic_create_table_3"></td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td id="LWQ_SC_mnemonic_create_table_4"></td>
+                        <td>6</td>
+                        <td id="LWQ_SC_mnemonic_create_table_5"></td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td id="LWQ_SC_mnemonic_create_table_6"></td>
+                        <td>8</td>
+                        <td id="LWQ_SC_mnemonic_create_table_7"></td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td id="LWQ_SC_mnemonic_create_table_8"></td>
+                        <td>10</td>
+                        <td id="LWQ_SC_mnemonic_create_table_9"></td>
+                    </tr>
+                    <tr>
+                        <td>11</td>
+                        <td id="LWQ_SC_mnemonic_create_table_10"></td>
+                        <td>12</td>
+                        <td id="LWQ_SC_mnemonic_create_table_11"></td>
+                    </tr>
+                </table>
+    
+                <p>In the next step you need to Double Check 3 words for your own security.
+                    <br>Hit Start Seed Prove if you are ready to continue.
+                </p>
+                <button id="LWQ_SC_mnemonic_create_button" class="button-crimson" disabled>Start Seed Prove (10)</button>
+            </div>
+    
+            <div id="LWQ_SC_mnemonic_prove" style="display: none;">
+                <p id="LWQ_SC_mnemonic_prove_word"></p>
+                <input id="LWQ_SC_mnemonic_prove_input" class="input-terminal" type="text">
+                <br>
+                <button id="LWQ_SC_mnemonic_prove_button" class="button-terminal" style="margin-top: 2em; margin-bottom: 3em;">Double Check</button>
+            </div>
+    
+            <div id="LWQ_SC_mnemonic_enter" style="display: none;">
+                <p>Enter your 12 word Mnemonic-Seed and hit the Button</p>
+                <table id="LWQ_SC_mnemonic_enter_table"></table>
+                <button id="LWQ_SC_mnemonic_enter_button" class="button-crimson" style="margin-top: 2em; margin-bottom: 3em;" disabled>Not a Mnemonic-Seed</button>
+            </div>
+    
             
-        </div>
+    
+            <div id="LWQ_SC_WALLET" style="display: none;">
+                <p id="LWQ_SC_WALLET_address"></p>
+                <p id="LWQ_SC_WALLET_balance" style="font-size: 1.37rem;"></p>
+                <p id="LWQ_SC_WALLET_pending"></p>
+    
+                <!--<button id="LWQ_SC_WALLET_KEYS">SHOW private keys</button>-->
+    
+                <p id="LWQ_SC_WALLET_OUTPUT"></p>
+    
+                <h2 style="color: whitesmoke;">Coin Control</h2>
+                <div id="LWQ_SC_COINCONTROL" style="overflow-y: scroll; max-height: 20rem;">
+                
+                </div>
+            </div>
+    
+            <div id="LWQ_SC_SIGN" style="display: none;">
+                <p id="LWQ_SC_SIGN_txid" style="word-wrap: break-word;"></p>
+                <p id="LWQ_SC_SIGN_amount"></p>
+                <p id="LWQ_SC_SIGN_destination"></p>
+                <p id="LWQ_SC_SIGN_omnilite"></p>
+                <button id="LWQ_SC_SIGN_button" class="button-terminal">SIGN</button>
+                <p id="LWQ_SC_SIGN_output"></p>
+            </div>
+    
+            <div id="LWQ_SC_PROPERTIES" style="display: none;">
+                <button id="LWQ_SC_PROPERTIES_CREATE" class="button-terminal">Mint new Property</button>
+                <br>
+                <div id="LWQ_SC_PROPERTYLIST"></div>
+                <div id="LWQ_SC_CREATEPROPERTY" style="overflow-y: scroll; height: 30em; display: inline-block;"></div>
+            </div>
+    
+            <div id="LWQ_SC_TOKEN" style="display: none;">
+                
+            </div>
 
-        <div id="LWQ_SC_NFT" style="display: none;">
-            
-        </div>
+            <div id="LWQ_SC_TOKENSEND" style="display: none;">
+                
+            </div>
+    
+            <div id="LWQ_SC_DEX" style="display: none;">
+                
+            </div>
+
+            <div id="LWQ_SC_DEX_REQUEST" style="display: none;">
+                
+            </div>
+
+            <div id="LWQ_SC_DEX_LIST" style="display: none;">
+                
+            </div>
+    
+            <div id="LWQ_SC_NFT" style="display: none;">
+                
+            </div>
+        </main>
     </body>
 </html>
 
 <script src="litecoinjs-lib.js"></script>
 <script src="bip39.js"></script>
+<script src="index.js"></script>
 <script src="content.js"></script>
 
 <style>
-    ::-webkit-scrollbar {
-        display: none !important;
-    }
+/* width */
+::-webkit-scrollbar
+{
+    width: 9px;
+}
+  
+/* Track */
+::-webkit-scrollbar-track 
+{
+    width: 0;
+}
+   
+/* Handle */
+::-webkit-scrollbar-thumb
+{
+    background: #59071e; 
+    border-radius: 10px;
+}
+  
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover 
+{
+    background-image: linear-gradient(to right, #730a38, crimson, #59071e);
+}
 
-    ::-webkit-scrollbar-button {
-        display: none !important;
-    }
+.input-terminal
+{
+    background-color: transparent;
+    color: #4AF626;
+    border: 1px solid #4AF626;
+    border-radius: 7px;
+    font-size: 1.37em;
+    cursor: crosshair;
+    padding: 5px;
+}
+.button-terminal
+{
+    background-color: transparent;
+    color: whitesmoke;
+    border: 1px solid deepskyblue;
+    border-radius: 7px;
+    font-size: 1.37em;
+    padding: 5px;
+    cursor: crosshair;
+    margin-top: 1.37em;
+    margin-bottom: 0.37em;
+}
+.button-terminal:hover
+{
+    background-color: deepskyblue;
+    color: black;
+}
 
-    .input-terminal
-    {
-        background-color: transparent;
-        color: #4AF626;
-        border: 1px solid #4AF626;
-        border-radius: 7px;
-        font-size: 1.37em;
-        cursor: crosshair;
-        padding: 5px;
-    }
-    .button-terminal
-    {
-        background-color: transparent;
-        color: #4AF626;
-        border: 1px solid #4AF626;
-        border-radius: 7px;
-        font-size: 1.37em;
-        padding: 5px;
-        cursor: crosshair;
-        margin-top: 1.37em;
-        margin-bottom: 0.37em;
-    }
-    .button-terminal:hover
-    {
-        background-color: #4AF626;
-        color: black;
-    }
+.button-crimson
+{
+    background-color: transparent;
+    color: crimson;
+    border: 1px solid crimson;
+    border-radius: 7px;
+    font-size: 1.37em;
+    padding: 5px;
+    cursor: crosshair;
+}
+.button-crimson:hover
+{
+    background-color: crimson;
+    color: black;
+}
 
-    .button-crimson
-    {
-        background-color: transparent;
-        color: crimson;
-        border: 1px solid crimson;
-        border-radius: 7px;
-        font-size: 1.37em;
-        padding: 5px;
-        cursor: crosshair;
-    }
-    .button-crimson:hover
-    {
-        background-color: crimson;
-        color: black;
-    }
+.select-terminal
+{
+    background-color: black;
+    color: whitesmoke;
+    border: 1px solid deepskyblue;
+    border-radius: 7px;
+    font-size: 1.37em;
+    cursor: crosshair;
+    text-align: center;
+    width: 90%;
+    padding: 5px;
+}
 
-    .select-terminal
+.select-terminal optgroup
+{
+    color: deepskyblue;
+}
+
+.select-terminal option
+{
+    color: whitesmoke;
+}
+
+.button 
+{
+    width: 100%;
+    padding: 0.6em 2em;
+    border: none;
+    outline: none;
+    color: black;
+    font-size: 0.84rem;
+    background: #111;
+    cursor: pointer;
+    position: relative;
+    z-index: 0;
+    border-radius: 10px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+  
+.button:before 
+{
+    content: "";
+    background: linear-gradient(
+      45deg,
+      #ff0000,
+      #ff7300,
+      #fffb00,
+      #48ff00,
+      #00ffd5,
+      #002bff,
+      #7a00ff,
+      #ff00c8,
+      #ff0000
+    );
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    background-size: 400%;
+    z-index: -1;
+    filter: blur(5px);
+    -webkit-filter: blur(5px);
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    animation: glowing-button-85 20s linear infinite;
+    transition: opacity 0.3s ease-in-out;
+    border-radius: 10px;
+}
+  
+@keyframes glowing-button-85 
+{
+    0%
     {
-        background-color: black;
-        color: #4AF626;
-        border: 1px solid #4AF626;
-        border-radius: 7px;
-        font-size: 1.37em;
-        cursor: crosshair;
-        text-align: center;
-        width: 90%;
-        padding: 5px;
+        background-position: 0 0;
     }
+    50%
+    {
+        background-position: 400% 0;
+    }
+    100% 
+    {
+        background-position: 0 0;
+    }
+}
+  
+.button:after 
+{
+    z-index: -1;
+    /*content: "";*/
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #222;
+    left: 0;
+    top: 0;
+    border-radius: 10px;
+}
+
+.text-center
+{
+	color:#fff;	
+	text-transform:uppercase;
+    font-size: 23px;
+    margin: -50px 0 80px 0;
+    display: block;
+    text-align: center;
+}
+.box
+{
+	position:absolute;
+	left:50%;
+	top:50%;
+	transform: translate(-50%,-50%);
+    background-color: rgba(0, 0, 0, 0.89);
+	border-radius:3px;
+	padding:70px 100px;
+}
+.input-container
+{
+	position:relative;
+	margin-bottom:25px;
+}
+.input-container label
+{
+	position:absolute;
+	top:0px;
+	left:0px;
+	font-size:16px;
+	color:#fff;	
+    pointer-events: none;
+	transition: all 0.5s ease-in-out;
+}
+.input-container input
+{ 
+    border:0;
+    border-bottom:1px solid #555;  
+    background:transparent;
+    width:100%;
+    padding:8px 0 5px 0;
+    font-size:16px;
+    color:#fff;
+}
+.input-container input:focus
+{ 
+    border:none;	
+    outline:none;
+    border-bottom:1px solid #e74c3c;	
+}
+.input-container input:focus ~ label,
+.input-container input:valid ~ label
+{
+	top:-12px;
+	font-size:12px;
+}
 </style>

@@ -1,9 +1,547 @@
 <!DOCTYPE html>
-<html>
-    <head></head>
-    <body>
+<style>
+html
+{
+    width: 100dvw;
+    height: 100dvh;
+    background: black;
+}
 
+body
+{
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+}
+
+.hl
+{
+    background-size: 400% 100%;
+    background-image: -webkit-repeating-linear-gradient(
+        135deg,
+        rgb(0, 191, 255, 1) 0%,
+        rgb(0, 191, 255, 0.1) 20%,
+        rgb(0, 191, 255, 0.73) 40%, 
+        rgb(0, 191, 255, 0.37) 60%, 
+        rgb(0, 191, 255, 0.5) 80%, 
+        rgb(0, 191, 255, 1) 100%
+    );
+    position: fixed;
+    width: 90dvw;
+    height: 3px;
+    left: 5dvw;
+    animation: lines-hl linear 30s infinite;
+    transition: opacity 0.3s ease-in-out;
+}
+
+@keyframes lines-hl
+{
+    0% {background-position: 400% 0%}
+    20% {background-position: 320% 0%}
+    40% {background-position: 240% 0%}
+    60% {background-position: 160% 0%}
+    80% {background-position: 80% 0%}
+    100% {background-position: 0% 0%}
+}
+
+.vl
+{
+    background-size: 100% 400%;
+    background-image: -webkit-repeating-linear-gradient(
+        135deg,
+        rgb(0, 191, 255, 1) 0%,
+        rgb(0, 191, 255, 0.1) 20%,
+        rgb(0, 191, 255, 0.73) 40%, 
+        rgb(0, 191, 255, 0.37) 60%, 
+        rgb(0, 191, 255, 0.5) 80%, 
+        rgb(0, 191, 255, 1) 100%
+    );
+    position: fixed;
+    height: 94dvh;
+    width: 3px;
+    bottom: 1dvh;
+    animation: lines-vl linear 30s infinite;
+    transition: opacity 0.3s ease-in-out;
+}
+
+@keyframes lines-vl
+{
+    0% {background-position: 0% 400%}
+    20% {background-position: 0% 320%}
+    40% {background-position: 0% 240%}
+    60% {background-position: 0% 160%}
+    80% {background-position: 0% 80%}
+    100% {background-position: 0% 0%}
+}
+
+.label
+{
+    font-family: "Lucida Console", monospace;
+    margin-top: 0.5dvh;
+    margin-left: 2dvw;
+    font-weight: bold;
+    font-size: 2.4dvh;
+    color: whitesmoke;
+}
+
+.field
+{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 73%;
+    text-align: center;
+}
+
+.wrapper_login
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 20dvw;
+    height: 20dvh;
+    overflow: hidden;
+}
+
+.border_login
+{
+    position: absolute;
+    top: 3.7%;
+    left: 3%;
+    width: 93%;
+    height: 100%;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgb(30, 132, 167), rgb(6, 70, 92), rgb(0, 191, 255));
+    transform: skew(-15deg);
+    clip-path: polygon(
+        40% 0%,
+        45% 15%,
+        100% 15%,
+        90% 15%,
+        97% 15%,
+        97% 95%,
+        3% 94%,
+        3% 0%
+    );
+}
+
+.login
+{
+    position: absolute;
+    top: 3%;
+    left: 1.5%;
+    width: 95%;
+    height: 94%;
+    overflow: hidden;
+    background: #070707;
+    clip-path: polygon(
+        40% 0%,
+        45% 15%,
+        100% 15%,
+        90% 15%,
+        99% 15%,
+        99% 95%,
+        3% 94%,
+        3% 0%
+    );
+}
+
+.login .wrapper_button
+{
+    margin-bottom: 1dvh;
+    margin-left: 6%;
+    width: 90%;
+    height: 37%;
+    background-size: 400% 100%;
+    background-image: -webkit-repeating-linear-gradient(
+        37deg,
+        rgb(0, 191, 255, 1) 0%,
+        rgb(0, 191, 255, 0.1) 20%,
+        rgb(0, 191, 255, 0.73) 40%, 
+        rgb(0, 191, 255, 0.37) 60%, 
+        rgb(0, 191, 255, 0.5) 80%, 
+        rgb(0, 191, 255, 1) 100%
+    );
+    animation: lines-hl linear 30s infinite;
+    transition: opacity 0.3s ease-in-out;
+    font-size: 2dvh;
+    clip-path: polygon(
+        0 0%,
+        0% 0,
+        90% 0,
+        100% 37%,
+        100% 100%,
+        100% 100%,
+        10% 100%,
+        0% 63%
+    );
+}
+
+.login .button
+{
+    margin-top: 0.73%;
+    font-family: "Lucida Console", monospace;
+    width: 96%;
+    height: 90%;
+    background: #070707;
+    color: whitesmoke;
+    font-size: 2dvh;
+    border: 0px;
+    cursor: crosshair;
+    clip-path: polygon(
+        0 0%,
+        0% 0,
+        90% 0,
+        100% 37%,
+        100% 100%,
+        100% 100%,
+        10% 100%,
+        0% 63%
+    );
+}
+
+.wrapper_stats
+{
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 90dvw;
+    height: 20.2dvh;
+    overflow: hidden;
+}
+
+.border_stats
+{
+    position: absolute;
+    top: 3.7%;
+    right: -1.75%;
+    width: 93%;
+    height: 100%;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgb(30, 132, 167), rgb(6, 70, 92), rgb(0, 191, 255));
+    transform: skew(-15deg);
+    clip-path: polygon(
+        40% 0%,
+        45% 15%,
+        100% 15%,
+        90% 15%,
+        97% 15%,
+        97% 95%,
+        3% 94%,
+        3% 0%
+    );
+}
+
+.stats
+{
+    position: absolute;
+    top: 3%;
+    left: 0.5%;
+    width: 97%;
+    height: 94%;
+    overflow: hidden;
+    background: #070707;
+    clip-path: polygon(
+        40% 0%,
+        45% 15%,
+        100% 15%,
+        90% 15%,
+        99% 15%,
+        99% 95%,
+        3% 94%,
+        3% 0%
+    );
+}
+
+.stats .label
+{
+    margin-left: 4dvw;
+}
+
+.wrapper_menu
+{
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 20dvw;
+    height: 80dvh;
+    overflow: hidden;
+}
+
+.border_menu
+{
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 93%;
+    height: 100%;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgb(30, 132, 167), rgb(6, 70, 92), rgb(0, 191, 255));
+    clip-path: polygon(
+        41% 0%,
+        46% 5%,
+        100% 5%,
+        100% 0%,
+        100% 0%,
+        100% 100%,
+        0% 100%,
+        0% 0%
+    );
+}
+
+.menu
+{
+    position: absolute;
+    bottom: 1%;
+    left: 1%;
+    width: 97%;
+    height: 98%;
+    overflow: hidden;
+    background: #070707;
+    clip-path: polygon(
+        40% 0%,
+        45% 5%,
+        100% 5%,
+        100% 0%,
+        100% 0%,
+        100% 100%,
+        0% 100%,
+        0% 0%
+    );
+}
+
+.menu .label
+{
+    transform: skew(-15deg);
+}
+
+.menu .wrapper_button
+{
+    margin-bottom: 1dvh;
+    margin-left: 2%;
+    width: 96%;
+    height: 7.3%;
+    background-size: 400% 100%;
+    background-image: -webkit-repeating-linear-gradient(
+        37deg,
+        rgb(0, 191, 255, 0.5) 0%, 
+        rgb(0, 191, 255, 1) 20%,
+        rgb(0, 191, 255, 1) 40%,
+        rgb(0, 191, 255, 0.1) 60%,
+        rgb(0, 191, 255, 0.73) 80%, 
+        rgb(0, 191, 255, 0.37) 100%
+    );
+    animation: lines-hl linear 30s infinite;
+    transition: opacity 0.3s ease-in-out;
+    font-size: 2dvh;
+    clip-path: polygon(
+        0 0%,
+        0% 0,
+        90% 0,
+        100% 37%,
+        100% 100%,
+        100% 100%,
+        10% 100%,
+        0% 63%
+    );
+}
+
+.menu .button
+{
+    margin-top: 0.73%;
+    font-family: "Lucida Console", monospace;
+    width: 96%;
+    height: 90%;
+    background: #070707;
+    color: whitesmoke;
+    font-size: 2dvh;
+    border: 0px;
+    cursor: crosshair;
+    clip-path: polygon(
+        0 0%,
+        0% 0,
+        90% 0,
+        100% 37%,
+        100% 100%,
+        100% 100%,
+        10% 100%,
+        0% 63%
+    );
+}
+
+.menu .field
+{
+    height: 93.7%;
+}
+
+.wrapper_content
+{
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 80.9dvw;
+    height: 80dvh;
+    overflow: hidden;
+}
+
+.border_content
+{
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgb(30, 132, 167), rgb(6, 70, 92), rgb(0, 191, 255));
+    clip-path: polygon(
+        41% 0%,
+        46% 5%,
+        100% 5%,
+        100% 0%,
+        100% 0%,
+        100% 100%,
+        0% 100%,
+        0% 0%
+    );
+}
+
+.content
+{
+    position: absolute;
+    bottom: 1%;
+    right: 0.5%;
+    width: 99%;
+    height: 98%;
+    overflow: hidden;
+    background: #070707;
+    clip-path: polygon(
+        40% 0%,
+        45% 5%,
+        100% 5%,
+        100% 0%,
+        100% 0%,
+        100% 100%,
+        0% 100%,
+        0% 0%,
+        0% 0%
+    );
+}
+
+.content .label
+{
+    transform: skew(-15deg);
+}
+
+</style>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <div class="hl" style="top: 1.73dvh; width: 95dvw; height: 7px"></div>
+
+        <div class="hl" style="top: 4.5dvh;"></div>
+        <div class="hl" style="top: 7.5dvh;"></div>
+        <div class="hl" style="top: 10.5dvh;"></div>
+        <div class="hl" style="top: 13.5dvh;"></div>
+        
+        <div class="hl" style="top: 27dvh;"></div>
+        <div class="hl" style="top: 30dvh;"></div>
+        <div class="hl" style="top: 33dvh;"></div>
+        <div class="hl" style="top: 36dvh;"></div>
+        <div class="hl" style="top: 39dvh;"></div>
+        <div class="hl" style="top: 42dvh;"></div>
+        <div class="hl" style="top: 45dvh;"></div>
+        <div class="hl" style="top: 48dvh;"></div>
+        <div class="hl" style="top: 51dvh;"></div>
+        <div class="hl" style="top: 54dvh;"></div>
+        <div class="hl" style="top: 57dvh;"></div>
+        <div class="hl" style="top: 60dvh;"></div>
+        <div class="hl" style="top: 63dvh;"></div>
+        <div class="hl" style="top: 66dvh;"></div>
+        <div class="hl" style="top: 69dvh;"></div>
+        <div class="hl" style="top: 72dvh;"></div>
+        <div class="hl" style="top: 75dvh;"></div>
+        <div class="hl" style="top: 78dvh;"></div>
+        <div class="hl" style="top: 81dvh;"></div>
+        <div class="hl" style="top: 84dvh;"></div>
+        <div class="hl" style="top: 87dvh;"></div>
+        <div class="hl" style="top: 90dvh;"></div>
+        <div class="hl" style="top: 93dvh;"></div>
+        <div class="hl" style="top: 96dvh;"></div>
+
+        <div class="vl" style="left: 8dvw;"></div>
+        <div class="vl" style="left: 10dvw;"></div>
+        <div class="vl" style="left: 12dvw;"></div>
+        <div class="vl" style="left: 14dvw;"></div>
+        <div class="vl" style="left: 16dvw;"></div>
+        <div class="vl" style="left: 18dvw;"></div>
+
+        <div class="vl" style="left: 54dvw;"></div>
+        <div class="vl" style="left: 59dvw;"></div>
+        <div class="vl" style="left: 64dvw;"></div>
+        <div class="vl" style="left: 69dvw;"></div>
+        <div class="vl" style="left: 74dvw;"></div>
+        <div class="vl" style="left: 79dvw;"></div>
+        <div class="vl" style="left: 84dvw;"></div>
+        <div class="vl" style="left: 89dvw;"></div>
+        <div class="vl" style="left: 94dvw;"></div>
+        <div class="vl" style="left: 99dvw;"></div>
+
+        <div class="wrapper_stats">
+            <div class="border_stats">
+                <div class="stats"><p class="label">Server Stats</p></div>
+            </div>
+        </div>
+
+        <div class="wrapper_login">
+            <div class="border_login">
+                <div class="login">
+                    <p class="label">Login</p>
+                    <div class="field">
+                        <div class="wrapper_button">
+                            <button class="button" onclick="test()">Self - Custody</button>
+                        </div>
+                        <div class="wrapper_button">
+                            <button class="button">Custodial</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="wrapper_menu">
+            <div class="border_menu">
+                <div class="menu">
+                    <p class="label">Menu</p>
+                    <div class="field">
+                        <div class="wrapper_button">
+                            <button class="button" onclick="test()">Home</button>
+                        </div>
+                        <div class="wrapper_button">
+                            <button class="button">Wallet</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="wrapper_content">
+            <div class="border_content">
+                <div class="content"><p class="label">Content</p></div>
+            </div>
+        </div>
     </body>
 </html>
+<script>
+function test()
+{
+    const url = "https://v2.liteworlds.quest/?method=public-get-property&property=3843"
 
-<script src="omnilite.js"></script>
+    fetch(url).then((response) => response.json()).then(function(data)
+    {
+        console.log(data)
+    })
+}
+</script>
