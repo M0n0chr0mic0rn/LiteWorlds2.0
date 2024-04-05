@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html style="width: 20em; height: 30rem; max-height: 30em; background-color: black; color: whitesmoke; text-align: center;font-size: 1rem;">
     <body>
-        <header>
+        <header style="height: 10dvh;">
             <div id="LWQ_SC_NAV" style="display: none; width: 100%; margin-top: 0.37em; margin-bottom: 0.37em;">
                 <select id="LWQ_SC_NAV_SELECT" class="select-terminal">
                     <optgroup label="Litecoin">
@@ -11,7 +11,7 @@
                         <option value="OmniliteProperties" style="text-align: left;">Omnilite Properties</option>
                         <option value="OmniliteToken" style="text-align: left;">Omnilite Token</option>
                         <option value="OmniliteNFT" style="text-align: left;">Omnilite NFTs</option>
-                        <option value="OrdinalNFT" style="text-align: left;">Ordinal NFTs</option>
+                        <option value="OrdinalNFT" style="text-align: left;">Inscriptions</option>
                     </optgroup>
                     <optgroup label="Market">
                         <option value="OmniliteDEX" style="text-align: left;">Omnilite Token Exchange</option>
@@ -22,15 +22,23 @@
             </div>
         </header>
 
-        <main>
-            <div id="LWQ_SC_create_passwd" style="display: none;">
+        <main style="height: 85dvh;">
+            <div id="LWQ_SC_create_passwd" style="display: none; width: 100%;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td><h1 style="color: deepskyblue;">LiteWorlds Wallet</h1></td>
+                        <td style="width: 3.37rem;"><img style="width: 3.37rem; height: 3.7rem;" src="https://v2.liteworlds.quest/logo.png" alt=""></td>
+                    </tr>
+                </table>
+                
+                
                 <p style="font-size: 1.37em;">
-                    At first let's setup a Password for this Extension<br><br>
+                    At first let's setup a Password<br><br>
                     Write this Password down!<br>
-                    There is no way to recover!<br><br>
-                    This Password is part of your final Seed!<br>
+                    There is no way to recover!<br>
+                    This Password is part of your final Seed!<br><br>
                     If you want to recover your Wallet you have to use the same Password!<br><br>
-                    By continue you accept that LiteWorldsQuest is not able to help you with lost funds!
+                    By continue you confirm that LiteWorlds is not able to help you with lost access!
                 </p>
     
                 <table style="width: 100%;">
@@ -47,8 +55,14 @@
                 <button id="LWQ_SC_create_passwd_button" class="button-terminal" style="margin-top: 1.5em; margin-bottom: 2em;">Save Password</button>
             </div>
     
-            <div id="LWQ_SC_enter_passwd" style="display: none;">
-                <div class="box">
+            <div id="LWQ_SC_enter_passwd" style="display: none; width: 100%;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td><h1 style="color: deepskyblue;">LiteWorlds Wallet</h1></td>
+                        <td style="width: 3.37rem;"><img style="width: 3.37rem; height: 3.7rem;" src="https://v2.liteworlds.quest/logo.png" alt=""></td>
+                    </tr>
+                </table>
+                <div class="box" style="margin-top: 3.7rem;">
                     <form>
                         <span class="text-center">Unlock Extension</span>
                         <div class="input-container">
@@ -60,19 +74,34 @@
                 </div>           
             </div>
     
-            <div id="LWQ_SC_mnemonic" style="display: none;">
-                <p style="font-size: 1.37em;">Do you need a 12 words Mnemonic-Seed?<br>Or do you have one?</p>
-                <button id="LWQ_SC_mnemonic_button_create" class="button-terminal" style="margin-top: 2em; margin-bottom: 2em;">Create Mnemonic-Seed</button>
-                <button id="LWQ_SC_mnemonic_button_enter" class="button-terminal" style="margin-bottom: 3em;">Enter Mnemonic-Seed</button>
+            <div id="LWQ_SC_mnemonic" style="display: none; width: 100%;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td><h1 style="color: deepskyblue;">LiteWorlds Wallet</h1></td>
+                        <td style="width: 3.37rem;"><img style="width: 3.37rem; height: 3.7rem;" src="https://v2.liteworlds.quest/logo.png" alt=""></td>
+                    </tr>
+                </table>
+
+                <p style="font-size: 1.37em; margin-top: 3.7em;">If this is your first install we recommend to create a new Seed here</p>
+                <button id="LWQ_SC_mnemonic_button_create" class="button-terminal" style="margin-top: 0.37em; margin-bottom: 2em;">Create Mnemonic-Seed</button>
+                <p style="font-size: 1.37em;">Otherwise you can enter your Seed here</p>
+                <button id="LWQ_SC_mnemonic_button_enter" class="button-terminal" style="margin-top: 0.37em;">Enter Mnemonic-Seed</button>
             </div>
     
-            <div id="LWQ_SC_mnemonic_create" style="display: none;">
-                <p style="font-size: 1.37em;">
+            <div id="LWQ_SC_mnemonic_create" style="display: none; width: 100%;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td><h1 style="color: deepskyblue;">LiteWorlds Wallet</h1></td>
+                        <td style="width: 3.37rem;"><img style="width: 3.37rem; height: 3.7rem;" src="https://v2.liteworlds.quest/logo.png" alt=""></td>
+                    </tr>
+                </table>
+
+                <p style="font-size: 1.37em; margin-top: 0.37em;">
                     Write down these 12 words you will need them to recover your Wallet.<br>
                 </p>
                 <p>
-                    Take care about this data, in combination with your password it is the only way to recover your funds and token!<br>
-                    LiteWorldsQuest wont be able to help!
+                    Take care about this data, in combination with your password it is the only way to recover your assets!<br>
+                    LiteWorlds wont be able to help!
                 </p>
                 <table id="LWQ_SC_mnemonic_create_table" style="width: 100%; font-size: 1.37em;">
                     <tr>
@@ -116,40 +145,58 @@
                 <p>In the next step you need to Double Check 3 words for your own security.
                     <br>Hit Start Seed Prove if you are ready to continue.
                 </p>
-                <button id="LWQ_SC_mnemonic_create_button" class="button-crimson" disabled>Start Seed Prove (10)</button>
+                <button id="LWQ_SC_mnemonic_create_button" style="margin-top: 0.37em;" class="button-crimson" disabled>Start Seed Prove (10)</button>
             </div>
     
-            <div id="LWQ_SC_mnemonic_prove" style="display: none;">
-                <p id="LWQ_SC_mnemonic_prove_word"></p>
+            <div id="LWQ_SC_mnemonic_prove" style="display: none; width: 100%;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td><h1 style="color: deepskyblue;">LiteWorlds Wallet</h1></td>
+                        <td style="width: 3.37rem;"><img style="width: 3.37rem; height: 3.7rem;" src="https://v2.liteworlds.quest/logo.png" alt=""></td>
+                    </tr>
+                </table>
+
+                <p id="LWQ_SC_mnemonic_prove_word" style="margin-top: 3.7rem;"></p>
                 <input id="LWQ_SC_mnemonic_prove_input" class="input-terminal" type="text">
                 <br>
                 <button id="LWQ_SC_mnemonic_prove_button" class="button-terminal" style="margin-top: 2em; margin-bottom: 3em;">Double Check</button>
             </div>
     
-            <div id="LWQ_SC_mnemonic_enter" style="display: none;">
-                <p>Enter your 12 word Mnemonic-Seed and hit the Button</p>
+            <div id="LWQ_SC_mnemonic_enter" style="display: none; width: 100%;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td><h1 style="color: deepskyblue;">LiteWorlds Wallet</h1></td>
+                        <td style="width: 3.37rem;"><img style="width: 3.37rem; height: 3.7rem;" src="https://v2.liteworlds.quest/logo.png" alt=""></td>
+                    </tr>
+                </table>
+
+                <p>Enter your 12 word Mnemonic-Seed</p>
                 <table id="LWQ_SC_mnemonic_enter_table"></table>
                 <button id="LWQ_SC_mnemonic_enter_button" class="button-crimson" style="margin-top: 2em; margin-bottom: 3em;" disabled>Not a Mnemonic-Seed</button>
             </div>
     
             
     
-            <div id="LWQ_SC_WALLET" style="display: none;">
+            <div id="LWQ_SC_WALLET" style="display: none; width: 100%;">
                 <p id="LWQ_SC_WALLET_address"></p>
                 <p id="LWQ_SC_WALLET_balance" style="font-size: 1.37rem;"></p>
                 <p id="LWQ_SC_WALLET_pending"></p>
+
+                <p id="LWQ_SC_WALLET_cardinal"></p>
     
                 <!--<button id="LWQ_SC_WALLET_KEYS">SHOW private keys</button>-->
     
                 <p id="LWQ_SC_WALLET_OUTPUT"></p>
-    
-                <h2 style="color: whitesmoke;">Coin Control</h2>
-                <div id="LWQ_SC_COINCONTROL" style="overflow-y: scroll; max-height: 20rem;">
+                <div id="LWQ_SC_COINCONTROL" style="overflow-y: scroll; max-height: 59dvh;">
                 
                 </div>
             </div>
+
+            <div id="LWQ_SC_UTXOSEND" style="display: none; width: 100%;">
+                
+            </div>
     
-            <div id="LWQ_SC_SIGN" style="display: none;">
+            <div id="LWQ_SC_SIGN" style="display: none; width: 100%;">
                 <p id="LWQ_SC_SIGN_txid" style="word-wrap: break-word;"></p>
                 <p id="LWQ_SC_SIGN_amount"></p>
                 <p id="LWQ_SC_SIGN_destination"></p>
@@ -158,37 +205,48 @@
                 <p id="LWQ_SC_SIGN_output"></p>
             </div>
     
-            <div id="LWQ_SC_PROPERTIES" style="display: none;">
+            <div id="LWQ_SC_PROPERTIES" style="display: none; width: 100%;">
                 <button id="LWQ_SC_PROPERTIES_CREATE" class="button-terminal">Mint new Property</button>
                 <br>
                 <div id="LWQ_SC_PROPERTYLIST"></div>
                 <div id="LWQ_SC_CREATEPROPERTY" style="overflow-y: scroll; height: 30em; display: inline-block;"></div>
             </div>
     
-            <div id="LWQ_SC_TOKEN" style="display: none;">
+            <div id="LWQ_SC_TOKEN" style="display: none; width: 100%;">
                 
             </div>
 
-            <div id="LWQ_SC_TOKENSEND" style="display: none;">
+            <div id="LWQ_SC_TOKENSEND" style="display: none; width: 100%;">
                 
             </div>
     
-            <div id="LWQ_SC_DEX" style="display: none;">
+            <div id="LWQ_SC_DEX" style="display: none; width: 100%;">
                 
             </div>
 
-            <div id="LWQ_SC_DEX_REQUEST" style="display: none;">
+            <div id="LWQ_SC_DEX_REQUEST" style="display: none; width: 100%;">
                 
             </div>
 
-            <div id="LWQ_SC_DEX_LIST" style="display: none;">
+            <div id="LWQ_SC_DEX_LIST" style="display: none; width: 100%;">
                 
             </div>
     
-            <div id="LWQ_SC_NFT" style="display: none;">
+            <div id="LWQ_SC_NFTOMNI" style="display: none; width: 100%;">
+                
+            </div>
+
+            <div id="LWQ_SC_NFTORDI" style="display: none; width: 100%;">
                 
             </div>
         </main>
+
+        <footer style="position: sticky; bottom: 0;height: 3.7dvh;">
+            <div>
+                <b id="STAT_LWQ" style="color: crimson; float: left;">LiteWorldsQuest offline</b>
+                <b id="STAT_EXP" style="color: crimson; float: right;">LitecoinSpace offline</b>
+            </div>
+        </footer>
     </body>
 </html>
 
@@ -226,8 +284,8 @@
 .input-terminal
 {
     background-color: transparent;
-    color: #4AF626;
-    border: 1px solid #4AF626;
+    color: crimson;
+    border: 1px solid deepskyblue;
     border-radius: 7px;
     font-size: 1.37em;
     cursor: crosshair;
@@ -235,6 +293,8 @@
 }
 .button-terminal
 {
+    width: 73%;
+    font-weight: bolder;
     background-color: transparent;
     color: whitesmoke;
     border: 1px solid deepskyblue;

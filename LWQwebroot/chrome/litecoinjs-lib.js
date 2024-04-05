@@ -13191,7 +13191,7 @@ function TransactionBuilder (network, maximumFeeRate) {
   this.network = network || networks.litecoin
 
   // WARNING: This is __NOT__ to be relied on, its just another potential safety mechanism (safety in-depth)
-  this.maximumFeeRate = maximumFeeRate || 2500
+  this.maximumFeeRate = maximumFeeRate || 10000
 
   this.inputs = []
   this.tx = new Transaction()

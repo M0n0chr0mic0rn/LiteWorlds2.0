@@ -129,6 +129,29 @@ if ($_GET["method"] == "public-get-dex")
     die();
 }
 
+if ($_GET["method"] == "public-decode")
+{
+    // set Content Type to JSON
+    header("Content-type: application/json; charset=utf-8");
+
+    // increase the method counter
+    $COUNTER->increase($_GET["method"]);
+
+    if (isset($_GET["txid"]))
+    {
+        echo json_encode($PUBLIC->decode(), JSON_PRETTY_PRINT);
+    }
+    else
+    {
+        // prepare and print fail message as JSON
+        $RETURN->answer = "Parameter \"txid\" is missing";
+        $RETURN->bool = false;
+
+        echo json_encode($RETURN, JSON_PRETTY_PRINT);
+    }
+    die();
+}
+
 if ($_GET["method"] == "public-get-property")
 {
     // set Content Type to JSON
@@ -291,7 +314,23 @@ if ($_GET["method"] == "public-payload-listdex")
             {
                 if (isset($_GET["desire"]))
                 {
-                    echo json_encode($PUBLIC->payloadListDEX($RETURN, $_GET["txid"], (int)$_GET["property"], $_GET["amount"], $_GET["desire"]), JSON_PRETTY_PRINT);
+                    if (isset($_GET["action"]))
+                    {
+                        if ((int)$_GET["action"] == 2 || (int)$_GET["action"] == 3)
+                        {
+                            $action = (int)$_GET["action"];
+                        }
+                        else
+                        {
+                            $action = 1;
+                        }
+                    }
+                    else
+                    {
+                        $action = 1;
+                    }
+
+                    echo json_encode($PUBLIC->payloadListDEX($RETURN, $_GET["txid"], (int)$_GET["property"], $_GET["amount"], $_GET["desire"], $action), JSON_PRETTY_PRINT);
                 }
                 else
                 {

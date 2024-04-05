@@ -436,7 +436,6 @@ body
 </style>
 <html>
     <head>
-
     </head>
     <body>
         <div class="hl" style="top: 1.73dvh; width: 95dvw; height: 7px"></div>
@@ -497,14 +496,14 @@ body
 
         <div class="wrapper_login">
             <div class="border_login">
-                <div class="login">
+                <div id="login" class="login">
                     <p class="label">Login</p>
                     <div class="field">
                         <div class="wrapper_button">
-                            <button class="button" onclick="test()">Self - Custody</button>
+                            <button class="button" onclick="connectSC()">Self - Custody</button>
                         </div>
                         <div class="wrapper_button">
-                            <button class="button">Custodial</button>
+                            <button class="button" onclick="connectC()">Custodial</button>
                         </div>
                     </div>
                 </div>
@@ -534,14 +533,10 @@ body
         </div>
     </body>
 </html>
+<script src="omnilite.js"></script>
 <script>
-function test()
-{
-    const url = "https://v2.liteworlds.quest/?method=public-get-property&property=3843"
-
-    fetch(url).then((response) => response.json()).then(function(data)
+    if (screen.orientation.type == "portrait-primary")
     {
-        console.log(data)
-    })
-}
+        alert("Please turn your device into landscape mode (widescreen)")
+    }
 </script>

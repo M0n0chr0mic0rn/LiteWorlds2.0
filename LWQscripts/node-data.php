@@ -81,11 +81,10 @@ class NodeData
         return self::$_node->omni_getnonfungibletokens($address);
     }
 
-    function payloadListDEX($RETURN, $txid, $property, $amount, $desire)
+    function payloadListDEX($RETURN, $txid, $property, $amount, $desire, $action)
     {
         $paymentwindow = 21;
         $minacceptfee = "0.00000100";
-        $action = 1;
 
         $payload = self::$_node->omni_createpayload_dexsell($property, $amount, $desire, $paymentwindow, $minacceptfee, $action);
         $modtxid = self::$_node->omni_createrawtx_opreturn($txid, $payload);
@@ -165,6 +164,11 @@ class NodeData
         }
 
         // add crowdsale
+    }
+
+    function decode($RETURN, $txid)
+    {
+        return self::$_node->decoderawtransaction($txid);
     }
 
     function payloadSendNFT($RETURN, $txid, $property, $tokenstart, $tokenend)

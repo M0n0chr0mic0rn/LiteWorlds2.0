@@ -52,11 +52,12 @@ chrome.runtime.onConnect.addListener(function(port)
 
         if (o.function && o.function === "getMaster")
         {
-            chrome.storage.local.get("LWQ_SC_MASTER").then((local) =>
+            console.log("hello")
+            chrome.storage.session.get("LWQ_SC_MASTER").then((session) =>
             {
                 port.postMessage({
                     "function": o.function,
-                    "master": local.LWQ_SC_MASTER
+                    "master": session.LWQ_SC_MASTER
                 })
             })
         }
@@ -70,31 +71,47 @@ chrome.runtime.onConnect.addListener(function(port)
 
 chrome.runtime.onConnectExternal.addListener(function(port)
 {
-    console.log(port)
+    //console.log(port)
     port.onMessage.addListener(function(o)
     {
-        console.log(o)
+        //console.log(o)
 
         chrome.storage.local.get("LWQ_SC_PASSWD").then((local) =>
         {
-            console.log(local.LWQ_SC_PASSWD)
+            //console.log(local.LWQ_SC_PASSWD)
             if (local.LWQ_SC_PASSWD !== undefined)
             {
                 chrome.storage.session.get("LWQ_SC_PASSWD").then((session) =>
                 {
-                    console.log(session.LWQ_SC_PASSWD)
+                    //console.log(session.LWQ_SC_PASSWD)
                     if (session.LWQ_SC_PASSWD !== undefined)
                     {
                         if (local.LWQ_SC_PASSWD === session.LWQ_SC_PASSWD)
                         {
                             if (o.function && o.function === "getMaster")
                             {
-                                chrome.storage.local.get("LWQ_SC_MASTER").then((local) =>
+                                chrome.storage.session.get("LWQ_SC_MASTER").then((session) =>
                                 {
-                                    console.log("Unlocked, ", local.LWQ_SC_MASTER)
+                                    console.log("Unlocked, ", session.LWQ_SC_MASTER)
                                     port.postMessage({
                                         "function": o.function,
-                                        "master": local.LWQ_SC_MASTER
+                                        "master": session.LWQ_SC_MASTER
+                                    })
+                                })
+                            }
+
+                            if (o.function && o.function === "getBalance")
+                            {
+                                chrome.storage.session.get("LWQ_SC_CARDINAL").then((cardinal) =>
+                                {
+                                    chrome.storage.session.get("LWQ_SC_ORDINAL").then((ordinal) =>
+                                    {
+                                        console.log("Unlocked, ", session.LWQ_SC_MASTER)
+                                        port.postMessage({
+                                            "function": o.function,
+                                            "cardinal": cardinal.LWQ_SC_CARDINAL,
+                                            "ordinal": cardinal.LWQ_SC_ORDINAL
+                                        })
                                     })
                                 })
                             }

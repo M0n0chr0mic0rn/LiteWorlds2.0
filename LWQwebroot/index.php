@@ -18,9 +18,22 @@ error_reporting(E_ALL);
 // first we check the parameter "method" is set
 if (!isset($_GET["method"])) 
 {
-    // if not we call the website
-    include("./index.html");
-    die();
+    if (isset($_GET["LWQWinfo"]))
+    {
+        include("./LWQWinfo.html");
+        die();
+    }
+    else if (isset($_GET["TWOSinfo"]))
+    {
+        include("./TWOSinfo.html");
+        die();
+    }
+    else
+    {
+        // if not we call the website
+        include("./index.html");
+        die();
+    }
 } 
 else 
 {

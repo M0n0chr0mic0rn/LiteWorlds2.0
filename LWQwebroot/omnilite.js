@@ -6,12 +6,18 @@ const NFT_PROTO = document.getElementById("NFT_PROTO")
 const CONTENT_TRADER = document.getElementById("TRADER")
 const CONTENT_PROPERTY = document.getElementById("PROPERTY")
 
+const LOGIN = document.getElementById("login")
+
 var NFT_TRADER_BOT = new Object
 
 var AUTHKEY
+var MASTER
+let UTXO = new Array
+UTXO["cardinal"] = new Array
+UTXO["ordinal"] = new Array
 
-console.log(litecoin)
-console.log(chrome)
+//console.log(litecoin)
+//console.log(chrome)
 
 const __EXTID = "nhhekkeikolfiepadodiaopmbjpmbpne"
 
@@ -19,11 +25,27 @@ const __EXTID = "nhhekkeikolfiepadodiaopmbjpmbpne"
 const port = chrome.runtime.connect(__EXTID)
 port.onMessage.addListener(function(o)
 {
-    console.log("Callback: ", o.function)
+    console.log("Omnilite: ", o)
+
+    if (o.hasOwnProperty("answer"))
+    {
+        if (o.answer == "Extension locked!") alert("Please unlock your Wallet first.")
+    }
+    else if (o.function == "getMaster")
+    {
+        MASTER = o.master
+
+        port.postMessage({"function":"getBalance"})
+        //__init()
+    }
 })
 
-console.log(port)
-port.postMessage({"function":"getMaster"})
+console.log(screen.orientation)
+//alert(screen.orientation.type)
+//alert("hello")
+if (screen.orientation.type == "portrait-primary") alert("Please turn your Phone 90°")
+//console.log(port)
+//port.postMessage({"function":"getMaster"})
 
 // LOGIN
 // 1. Login via Extension
@@ -37,15 +59,75 @@ __init()
 
 function __init()
 {
-    NFT_PROTO.remove()
-    TraderBotGET()
+    if (MASTER != undefined)
+    {
+        console.log(LOGIN.children[1])
+        LOGIN.children[1].innerHTML = MASTER.substring(0, 10) + "..." + MASTER.substring(MASTER.length - 5, MASTER.length)
+        LOGIN.children[1].style.color = "whitesmoke"
+
+        let cardinal = 0
+        for (let a = 0; a < UTXO["cardinal"].length; a++)
+        {
+            const element = UTXO["cardinal"][a]
+            console.log(element)
+
+            cardinal += element.value
+        }
+        cardinal = (cardinal / 100000000).toFixed(8)
+
+        let ordinal = 0
+        for (let a = 0; a < UTXO["ordinal"].length; a++)
+        {
+            const element = UTXO["ordinal"][a]
+            console.log(element)
+
+            ordinal += element.value
+        }
+        ordinal = (ordinal / 100000000).toFixed(8)
+
+        let balance = (parseFloat(cardinal) + parseFloat(ordinal)).toFixed(8) + " LTC"
+
+        LOGIN.children[1].innerHTML += "<br><br>" + balance
+    }
+    //NFT_PROTO.remove()
+    //TraderBotGET()
     
 
-    const test = NFT_PROTO.cloneNode(true)
+    //const test = NFT_PROTO.cloneNode(true)
 
-    test.children[1].innerHTML = "hello"
+    //test.children[1].innerHTML = "hello"
 
-    console.log(NFT_PROTO.children, test.children)
+    //console.log(NFT_PROTO.children, test.children)
+}
+
+function connectSC()
+{
+    let port = chrome.runtime.connect(__EXTID)
+    port.onMessage.addListener(function(o)
+    {
+        console.log("Omnilite: ", o)
+
+        if (o.hasOwnProperty("answer"))
+        {
+            if (o.answer == "Extension locked!") alert("Please unlock your Wallet first.")
+        }
+        else if (o.function == "getMaster")
+        {
+            MASTER = o.master
+
+            port.postMessage({"function":"getBalance"})
+            //__init()
+        }
+        else if(o.function == "getBalance")
+        {
+            if (o.hasOwnProperty("cardinal")) UTXO["cardinal"] = o.cardinal
+            if (o.hasOwnProperty("ordinal")) UTXO["ordinal"] = o.ordinal
+
+            __init()
+        }
+    })
+    //const tempPort = chrome.runtime.connect(__EXTID)
+    port.postMessage({"function":"getMaster"})
 }
 
 function __toggle(CONTENT)

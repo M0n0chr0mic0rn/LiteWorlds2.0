@@ -332,9 +332,7 @@ class Omnilite
 					$time = time() + 30;
 					$status = 1;
 
-					$stmt = self::$_db->prepare("UPDATE send SET Time=:time, Status=:status WHERE BINARY User=:user AND BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal");
-					$stmt->bindParam(":time", $time);
-					$stmt->bindParam(":status", $status);
+					$stmt = self::$_db->prepare("DELETE FROM send WHERE BINARY User=:user AND BINARY Copper=:copper AND BINARY Jade=:jade AND BINARY Crystal=:crystal");
 					$stmt->bindParam(":user", $user);
 					$stmt->bindParam(":copper", $copper);
 					$stmt->bindParam(":jade", $jade);

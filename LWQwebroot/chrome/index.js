@@ -4,11 +4,34 @@ const ORD_TX = "http://ordi.liteworlds.quest/output/"
 const IPFS = "https://ipfs.io/ipfs/"
 const LWQ_API = "https://v2.liteworlds.quest/?method="
 
+const __LWQ_SC_STATLWQ = document.getElementById("STAT_LWQ")
+const __LWQ_SC_STATEXP = document.getElementById("STAT_EXP")
+
+fetch(LWQ_API + "hello").then(function(response)
+{
+    if (response["status"] == 200)
+    {
+        __LWQ_SC_STATLWQ.style.color = "#66FF66"
+        __LWQ_SC_STATLWQ.innerText = "LiteWorldsQuest online"
+    }
+})
+
+fetch(LITECOINSPACE + "api/address/MU78ANEyiaAAjM4Z7HT8zTB3HWCzrXvM6i/utxo").then(function(response)
+{
+    if (response["status"] == 200)
+    {
+        __LWQ_SC_STATEXP.style.color = "#66FF66"
+        __LWQ_SC_STATEXP.innerText = "LitecoinSpace online"
+    }
+})
+
 const __LWQ_SC_NAV = document.getElementById("LWQ_SC_NAV")
 const __LWQ_SC_WALLET = document.getElementById("LWQ_SC_WALLET")
+const __LWQ_SC_UTXOSEND = document.getElementById("LWQ_SC_UTXOSEND")
 const __LWQ_SC_WALLET_address = document.getElementById("LWQ_SC_WALLET_address")
 const __LWQ_SC_WALLET_balance = document.getElementById("LWQ_SC_WALLET_balance")
 const __LWQ_SC_WALLET_pending = document.getElementById("LWQ_SC_WALLET_pending")
+const __LWQ_SC_WALLET_cardinal = document.getElementById("LWQ_SC_WALLET_cardinal")
 const __LWQ_SC_COINCONTROL = document.getElementById("LWQ_SC_COINCONTROL")
 const __LWQ_SC_SIGN = document.getElementById("LWQ_SC_SIGN")
 const __LWQ_SC_PROPERTIES = document.getElementById("LWQ_SC_PROPERTIES")
@@ -16,7 +39,8 @@ const __LWQ_SC_PROPERTYLIST = document.getElementById("LWQ_SC_PROPERTYLIST")
 const __LWQ_SC_CREATEPROPERTY = document.getElementById("LWQ_SC_CREATEPROPERTY")
 const __LWQ_SC_TOKEN = document.getElementById("LWQ_SC_TOKEN")
 const __LWQ_SC_TOKENSEND = document.getElementById("LWQ_SC_TOKENSEND")
-const __LWQ_SC_NFT = document.getElementById("LWQ_SC_NFT")
+const __LWQ_SC_NFTOMNI = document.getElementById("LWQ_SC_NFTOMNI")
+const __LWQ_SC_NFTORDI = document.getElementById("LWQ_SC_NFTORDI")
 const __LWQ_SC_DEX = document.getElementById("LWQ_SC_DEX")
 const __LWQ_SC_DEX_REQUEST = document.getElementById("LWQ_SC_DEX_REQUEST")
 const __LWQ_SC_DEX_LIST = document.getElementById("LWQ_SC_DEX_LIST")
@@ -24,6 +48,7 @@ const __LWQ_SC_DEX_LIST = document.getElementById("LWQ_SC_DEX_LIST")
 var _LWQ_SC_UTXO = new Array()
 var _LWQ_SC_TOKENLIST = new Array()
 var _LWQ_SC_NFTLIST = new Array()
+var _LWQ_SC_BALANCE = new Array()
 
 document.getElementById("LWQ_SC_enter_passwd").style.display = "none"
 
@@ -48,7 +73,7 @@ __LWQ_SC_NAV.onchange = function()
             break
 
         case "OrdinalNFT":
-            //displayDEX()
+            displayInscriptions()
             break
 
         case "OmniliteDEX":
@@ -68,80 +93,184 @@ __LWQ_SC_NAV.onchange = function()
     }
 }
 
+function __init()
+{
+    if (_LWQ_SC_PASSWD === undefined)
+    {
+        getPass()
+    }
+
+    if (_LWQ_SC_SEED === undefined && _LWQ_SC_PASSWD !== undefined)
+    {
+        //port.postMessage({"function":"getSeed"})
+    }
+
+    try {
+        document.getElementById("CallTest").onclick() = function(data)
+        {
+            console.log(data)
+            testcall()
+        }
+    } catch (error) {
+        
+    }
+
+    if (!locked)
+    {
+        __LWQ_SC_NAV.style.display = "inline-block"
+        getWallet()
+    }
+}
+
 function __hide()
 {
-    __LWQ_SC_WALLET.style.display = "none"
+    __LWQ_SC_WALLET.style.display = "none",
+    __LWQ_SC_UTXOSEND.style.display = "none"
     __LWQ_SC_SIGN.style.display = "none"
     __LWQ_SC_PROPERTIES.style.display = "none"
     __LWQ_SC_TOKEN.style.display = "none"
     __LWQ_SC_TOKENSEND.style.display = "none"
-    __LWQ_SC_NFT.style.display = "none"
+    __LWQ_SC_NFTOMNI.style.display = "none"
+    __LWQ_SC_NFTORDI.style.display = "none"
     __LWQ_SC_DEX.style.display = "none"
     __LWQ_SC_DEX_REQUEST.style.display = "none"
     __LWQ_SC_DEX_LIST.style.display = "none"
     //clearInterval(REFRESH_INTERVALL)
 }
 
-function displayWallet()
+function getWallet()
 {
     __LWQ_SC_COINCONTROL.innerHTML = ""
 
     __hide()
     __LWQ_SC_WALLET.style.display = "inline-block"
-    let url = "https://litecoinspace.org/api/address/" + _LWQ_SC_WALLET.master + "/utxo"
-    fetch(url).then((responce) => responce.json()).then
-    (
-        function(data)
+
+    __LWQ_SC_WALLET_address.innerText = "Loading Wallet data"
+
+    litecoin.getMultiSigWallet(2, 2, "normal", _LWQ_SC_SEED, _LWQ_SC_PASSWD).then(async function(Wallet)
+    {
+        _LWQ_SC_WALLET = Wallet
+        chrome.storage.session.set({"LWQ_SC_MASTER": _LWQ_SC_WALLET.master})
+
+        let utxos = await getUTXOS()
+        //setTimeout(function(){displayWallet()}, 500)
+        displayWallet()
+        getToken()
+    })
+}
+
+async function getUTXOS()
+{
+    _LWQ_SC_UTXO["cardinal"] = new Array()
+    _LWQ_SC_UTXO["ordinal"] = new Array()
+
+    const url = "https://litecoinspace.org/api/address/" + _LWQ_SC_WALLET.master + "/utxo"
+    await fetch(url).then((response) => response.json()).then(async function(utxos)
+    {
+        utxos.sort(function(a, b){return b.value - a.value})
+
+        _LWQ_SC_BALANCE["total"] = 0
+        _LWQ_SC_BALANCE["cardinal"] = 0
+        _LWQ_SC_BALANCE["ordinal"] = 0
+
+        for (let a = 0; a < utxos.length; a++)
         {
-            data.sort(function(a, b){return a.value - b.value})
-            _LWQ_SC_UTXO = data
+            const utxo = utxos[a]
+            _LWQ_SC_BALANCE["total"] += utxo.value
 
-            let balance = 0
-            for (a = 0; a < data.length; a++)
+            const ordi = ORD_TX + utxo.txid + ":" + utxo.vout
+            await fetch(ordi).then((response) => response.text()).then(function(data)
             {
-                const utxo = data[a]
-                balance += utxo.value
+                let html = document.createElement("html")
+                html.innerHTML = data
 
-
-                let ord = ORD_TX + utxo.txid + ":" + utxo.vout
-                fetch(ord).then((responce) => responce.text()).then(function(data)
+                if (html.children[1].children[1].children[1].children[1].children[0] === undefined)
                 {
-                    let html = document.createElement("html")
-                    html.innerHTML = data
-
-
-
-                    if (html.children[1].children[1].children[1].children[1].children[0] === undefined)
-                    {
-                        displayUTXO(utxo, false, html)
-                    }
-                    else
-                    {
-                        displayUTXO(utxo, true, html)
-                    }
-
-                    
-                })
-            }
-
-            try
-            {
-                __LWQ_SC_WALLET_address.innerHTML = _LWQ_SC_WALLET.master
-
-                if (a == 0)
-                {
-                    __LWQ_SC_WALLET_balance.innerHTML = "Empty Pocket!"
+                    _LWQ_SC_UTXO["cardinal"].push(utxo)
+                    _LWQ_SC_BALANCE["cardinal"] += utxo.value
                 }
                 else
                 {
-                    __LWQ_SC_WALLET_balance.innerHTML = (balance / 100000000) + " LTC"
+                    _LWQ_SC_UTXO["ordinal"].push(utxo)
+                    _LWQ_SC_BALANCE["ordinal"] += utxo.value
                 }
-            }
-            catch (error) {
-                throw error
-            }
+
+                if (a == (utxos.length - 1))
+                {
+                    _LWQ_SC_UTXO["cardinal"].sort(function(a, b){return b.value - a.value})
+                    _LWQ_SC_UTXO["ordinal"].sort(function(a, b){return b.value - a.value})
+
+                    chrome.storage.session.set({"LWQ_SC_CARDINAL": _LWQ_SC_UTXO["cardinal"]})
+                    chrome.storage.session.set({"LWQ_SC_ORDINAL": _LWQ_SC_UTXO["ordinal"]})
+                }
+            })
         }
-    )
+    })
+
+    return true
+}
+
+function displayWallet()
+{
+    __LWQ_SC_WALLET_address.innerText = _LWQ_SC_WALLET.master
+    __LWQ_SC_WALLET_balance.innerText = "total " + (_LWQ_SC_BALANCE["total"] / 100000000).toFixed(8) + " LTC"
+    __LWQ_SC_WALLET_cardinal.innerText = "cardinal " + (_LWQ_SC_BALANCE["cardinal"] / 100000000).toFixed(8) + " LTC"
+
+    if (_LWQ_SC_UTXO["cardinal"].length == 0)
+    {
+        __LWQ_SC_WALLET_balance.innerText= "Empty Pocket!"
+        __LWQ_SC_WALLET_cardinal.innerHTML = ""
+    }
+
+    for (let a = 0; a < _LWQ_SC_UTXO["cardinal"].length; a++)
+    {
+        const utxo = _LWQ_SC_UTXO["cardinal"][a]
+        displayCardinal(utxo, false)
+    }
+}
+
+function displayCardinal(utxo)
+{
+    const div = document.createElement("div")
+    __LWQ_SC_COINCONTROL.appendChild(div)
+    div.style.width = "90%"
+    div.style.height = "1.37rem"
+    div.style.border = "1px solid deepskyblue"
+    div.style.borderRadius = "7px"
+    div.style.marginBottom = "0.37rem"
+    div.style.marginLeft = "5%"
+    div.style.float = "left"
+    div.style.cursor = "crosshair"
+
+    const value = document.createElement("b")
+    div.appendChild(value)
+
+    const status = document.createElement("b")
+    div.appendChild(status)
+
+    value.innerHTML = utxo.value + " lits "
+
+    if (utxo.value < 50000)
+    {
+        value.style.color = "crimson"
+    }
+
+    if (utxo.status.confirmed)
+    {
+        status.innerHTML = "confirmed"
+
+        div.onclick = function()
+        {
+            sendCardinal(utxo)
+        }
+        
+    }
+    else
+    {
+        status.innerHTML = "unconfirmed"
+        status.style.color = "crimson"
+        div.style.border = "1px solid crimson"
+    }
 }
 
 function displayDEX()
@@ -285,7 +414,17 @@ function displayDEX()
                                 displayDEXrequest(dex[a])
                             }
                         }
-                        
+                        else
+                        {
+                            //cancel listing
+                            const cancel = document.createElement("button")
+                            td3.appendChild(cancel)
+                            cancel.innerHTML = "Cancel Listing"
+                            cancel.onclick = function()
+                            {
+                                displaycancelDEX(dex[a])
+                            }
+                        }
                     }
                 })
             }
@@ -296,13 +435,8 @@ function displayDEX()
 function displayDEXrequest(dexentry)
 {
     __hide()
-
-    try
-    {
-        __LWQ_SC_DEX_REQUEST.innerHTML = ""
-        __LWQ_SC_DEX_REQUEST.style.display = "inline-block"
-    }
-    catch (error) {}
+    __LWQ_SC_DEX_REQUEST.innerHTML = ""
+    __LWQ_SC_DEX_REQUEST.style.display = "inline-block"
 
     const propertyid = document.createElement("p")
     __LWQ_SC_DEX_REQUEST.appendChild(propertyid)
@@ -429,6 +563,12 @@ function displayUTXO(utxo, ord, html)
     if (utxo.status.confirmed)
     {
         status.innerHTML = "confirmed"
+
+        div.onclick = function()
+        {
+            if (ord) sendOrdinal(utxo)
+            else sendCardinal(utxo)
+        }
     }
     else
     {
@@ -470,11 +610,132 @@ function displayUTXO(utxo, ord, html)
     document.getElementById("LWQ_SC_COINCONTROL").appendChild(div)
 }
 
+async function getFee(txid)
+{
+    const url = "https://v2.liteworlds.quest/decode.php"
+    var fee
+    await fetch(url, {
+        method: "POST",
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(txid)
+    }).then((response) => response.json()).then(function(data)
+    {
+        fee = data
+    })
+
+    return fee
+}
+
+async function mergeUTXOS()
+{
+    await getUTXOS()
+
+    let totalamount = 0
+    let input = new Array()
+
+    // take one utxo with a value greater then 50k
+    for (let a = 0; a < _LWQ_SC_UTXO["cardinal"].length; a++)
+    {
+        const element = _LWQ_SC_UTXO["cardinal"][a]
+
+        if (element.status.confirmed)
+        {
+            totalamount += element.value
+
+            let obj = new Object()
+            obj.txid = element.txid
+            obj.index = element.vout
+            obj.amount = element.value
+            input.push(obj)
+        }
+    }
+
+    litecoin.newMultiSigTransaction({
+        network: "normal",
+        witnessScript: _LWQ_SC_WALLET.witnessScript,
+        keys: [_LWQ_SC_WALLET.keys[0].wif, _LWQ_SC_WALLET.keys[1].wif],
+        signatures: 2,
+        utxo: input,
+        output: [
+        {
+            address: _LWQ_SC_WALLET.master,
+            amount: totalamount - 1000
+        }],
+        fee: 1000
+    }).then(async function(data)
+    {
+        const weight = await getFee(data.rawTransaction)
+        fee = parseInt(weight) + 1
+
+        litecoin.newMultiSigTransaction({
+            network: "normal",
+            witnessScript: _LWQ_SC_WALLET.witnessScript,
+            keys: [_LWQ_SC_WALLET.keys[0].wif, _LWQ_SC_WALLET.keys[1].wif],
+            signatures: 2,
+            utxo: input,
+            output: [
+            {
+                address: _LWQ_SC_WALLET.master,
+                amount: totalamount - fee
+            }],
+            fee: fee
+        }).then(async function(data)
+        {
+            //sign(data.rawTransaction, _LWQ_SC_WALLET.master, input, "Merge UTXOS")
+            submit(data.rawTransaction, _LWQ_SC_WALLET.master, input, "Merge UTXOS")
+        })
+    })
+}
+
+function sendCardinal(utxo)
+{
+    __hide()
+    __LWQ_SC_UTXOSEND.innerHTML = ""
+    __LWQ_SC_UTXOSEND.style.display = "inline-block"
+
+    const amount = document.createElement("p")
+    __LWQ_SC_UTXOSEND.appendChild(amount)
+    amount.style.marginTop = "3.7rem"
+    amount.innerHTML = "Sending " + utxo.value + " lits to"
+
+    const destination = document.createElement("input")
+    __LWQ_SC_UTXOSEND.appendChild(destination)
+    destination.classList.add("input-terminal")
+    destination.id = utxo.txid + ":" + utxo.vout
+    destination.style.width = "90%"
+
+    const send = document.createElement("button")
+    __LWQ_SC_UTXOSEND.appendChild(send)
+    send.classList.add("button-terminal")
+    send.innerHTML = "SEND"
+    send.onclick = function()
+    {
+        exitUTXO(utxo.txid, utxo.vout, utxo.value)
+    }
+
+    const merge = document.createElement("button")
+    __LWQ_SC_UTXOSEND.appendChild(merge)
+    merge.classList.add("button-terminal")
+    merge.innerHTML = "MERGE UTXOS"
+    merge.onclick = function()
+    {
+        mergeUTXOS()
+    }
+}
+
+function sendOrdinal(utxo)
+{
+
+}
+
 function displayTokens()
 {
     __hide()
-    __LWQ_SC_TOKEN.style.display = "inline-block"
     __LWQ_SC_TOKEN.innerHTML = ""
+    __LWQ_SC_TOKEN.style.display = "inline-block"
 
     for (let a = 0; a < _LWQ_SC_TOKENLIST.length; a++)
     {
@@ -542,9 +803,44 @@ function displayTokens()
     }
 }
 
-function displayToken()
+function displayToken(token)
 {
+    __hide()
+    __LWQ_SC_TOKENSEND.innerHTML = ""
+    __LWQ_SC_TOKENSEND.style.display = "inline-block"
 
+    let url = LWQ_API + "public-get-property&property=" + token["propertyid"]
+    fetch(url).then((response) => response.json()).then(function(property)
+    {
+        const balance = document.createElement("p")
+        __LWQ_SC_TOKENSEND.appendChild(balance)
+        balance.innerHTML = token["balance"] + " " + property["name"] + " available<br>How muc Token do you want to send?"
+
+        const amount = document.createElement("input")
+        __LWQ_SC_TOKENSEND.appendChild(amount)
+        amount.classList.add("input-terminal")
+        amount.type = "number"
+        amount.value = 1
+
+        const desti = document.createElement("p")
+        __LWQ_SC_TOKENSEND.appendChild(desti)
+        desti.innerHTML = "Destination Address"
+
+        const destination = document.createElement("input")
+        __LWQ_SC_TOKENSEND.appendChild(destination)
+        destination.classList.add("input-terminal")
+        destination.id = "destinationToken"
+        destination.style.width = "90%"
+
+        const send = document.createElement("button")
+        __LWQ_SC_TOKENSEND.appendChild(send)
+        send.classList.add("button-terminal")
+        send.innerHTML = "SEND"
+        send.onclick = function()
+        {
+            TokenSend(token["propertyid"], amount.value, destination.value)
+        }
+    })
 }
 
 function displayNFTLIST()
@@ -552,13 +848,13 @@ function displayNFTLIST()
     __hide()
     if (_LWQ_SC_NFTLIST.length == 0)
     {
-        __LWQ_SC_NFT.innerHTML = "No Data"
+        __LWQ_SC_NFTOMNI.innerHTML = "No Data"
     }
     else
     {
-        __LWQ_SC_NFT.innerHTML = ""
+        __LWQ_SC_NFTOMNI.innerHTML = ""
     }
-    __LWQ_SC_NFT.style.display = "inline-block"
+    __LWQ_SC_NFTOMNI.style.display = "inline-block"
 
     for (let a = 0; a < _LWQ_SC_NFTLIST.length; a++)
     {
@@ -583,7 +879,7 @@ function displayNFTLIST()
                 grantdata = JSON.parse(grantdata)
 
                 let div = document.createElement("div")
-                __LWQ_SC_NFT.appendChild(div)
+                __LWQ_SC_NFTOMNI.appendChild(div)
                 div.style.textAlign = "center"
                 div.style.width = "8em"
                 div.style.marginLeft = "1em"
@@ -612,12 +908,12 @@ function displayNFTLIST()
                     {
                         div.style.border = "1px solid crimson"
 
-                        let url = ORDINALSLITE + grantdata.json
+                        let url = ORD_CONTENT + grantdata.json
                         fetch(url).then((responce) => responce.json()).then
                         (
                             function(ord_json)
                             {
-                                image.src = ORDINALSLITE + ord_json.content[0]
+                                image.src = ORD_CONTENT + ord_json.content[0]
                             }
                         )
                     }
@@ -634,7 +930,7 @@ function displayNFTLIST()
 
                         if (grantdata.source == "ordinal")
                         {
-                            image.src = ORDINALSLITE + grantdata.content
+                            image.src = ORD_CONTENT + grantdata.content
                         }
                     }
                 }
@@ -663,7 +959,7 @@ function displayNFT(id)
 
     try
     {
-        __LWQ_SC_NFT.innerHTML = ""
+        __LWQ_SC_NFTOMNI.innerHTML = ""
     }
     catch (error) {}
 
@@ -692,7 +988,7 @@ function displayNFT(id)
                         grantdata = JSON.parse(grantdata)
 
                         let div = document.createElement("div")
-                        __LWQ_SC_NFT.appendChild(div)
+                        __LWQ_SC_NFTOMNI.appendChild(div)
                         div.style.textAlign = "center"
                         div.style.width = "20em"
                         div.style.height = "20em"
@@ -734,12 +1030,12 @@ function displayNFT(id)
                         {
                             if (grantdata.structure == "artefactual")
                             {
-                                let url = ORDINALSLITE + grantdata.json
+                                let url = ORD_CONTENT + grantdata.json
                                 fetch(url).then((responce) => responce.json()).then
                                 (
                                     function(ord_json)
                                     {
-                                        image.src = ORDINALSLITE + ord_json.content[0]
+                                        image.src = ORD_CONTENT + ord_json.content[0]
                                     }
                                 )
                             }
@@ -753,7 +1049,7 @@ function displayNFT(id)
 
                                 if (grantdata.source == "ordinal")
                                 {
-                                    image.src = ORDINALSLITE + grantdata.content
+                                    image.src = ORD_CONTENT + grantdata.content
                                 }
                             }
                         }
@@ -774,7 +1070,215 @@ function displayNFT(id)
     }
 }
 
-function displaylistDEX(token)
+function displayInscriptions()
+{
+    __hide()
+    if (_LWQ_SC_UTXO["ordinal"].length == 0)
+    {
+        __LWQ_SC_NFTORDI.innerHTML = "No Data"
+    }
+    else
+    {
+        __LWQ_SC_NFTORDI.innerHTML = ""
+    }
+    __LWQ_SC_NFTORDI.style.display = "inline-block"
+
+    for (let a = 0; a < _LWQ_SC_UTXO["ordinal"].length; a++)
+    {
+        const element = _LWQ_SC_UTXO["ordinal"][a]
+        
+        fetch(ORD_TX + element.txid + ":" + element.vout).then((response) => response.text()).then(function(data)
+        {
+            const html = document.createElement("html")
+            html.innerHTML = data
+            //throw html.children[1].children[1].children[1].children[1].childElementCount
+            //throw html.children[1].children[1].children[1].children[1].children[0].href.split("/inscription/")[1]
+
+            const inscription = html.children[1].children[1].children[1].children[1].children[0].href.split("/inscription/")[1]
+
+            const img = document.createElement("img")
+            __LWQ_SC_NFTORDI.appendChild(img)
+            img.src = ORD_CONTENT + inscription
+
+            img.style.width = "8em"
+            img.style.height = "8em"
+
+            img.onclick = function()
+            {
+                displayInscription(inscription, element)
+            }
+        })
+    }
+}
+
+function displayInscription(inscription, element)
+{
+    __LWQ_SC_NFTORDI.innerHTML = ""
+
+    let div = document.createElement("div")
+    __LWQ_SC_NFTORDI.appendChild(div)
+    div.style.textAlign = "center"
+    div.style.width = "20em"
+    div.style.height = "20em"
+    div.style.marginLeft = "1em"
+    div.style.display = "inline-block"
+    div.id = inscription
+
+    let p = document.createElement("p")
+    div.appendChild(p)
+    p.innerHTML = inscription.substring(0, 10) + "..." + inscription.substring(inscription.length - 5, inscription.length)
+    p.style.fontSize = "1.37em"
+
+    let value = document.createElement("p")
+    div.appendChild(value)
+    value.innerHTML = element.value + " lits"
+    value.style.fontSize = "1.37em"
+    
+    let image = document.createElement("img")
+    div.appendChild(image)
+    image.style.width = "20em"
+    image.style.height = "20em"
+    image.src = ORD_CONTENT + inscription
+
+    let destination = document.createElement("input")
+    div.appendChild(destination)
+    destination.classList.add("input-terminal")
+    destination.style.marginTop = "0.37em"
+
+    let br = document.createElement("br")
+    div.appendChild(br)
+
+    let send = document.createElement("button")
+    div.appendChild(send)
+    send.classList.add("button-terminal")
+    send.innerHTML = "SEND ORDI"
+    send.onclick = function()
+    {
+        createSendORDI(inscription, element, destination.value)
+    }
+
+    let split = document.createElement("button")
+    if (element.value >= 20000) div.appendChild(split)
+    split.classList.add("button-terminal")
+    split.innerHTML = "SPLIT"
+    split.onclick = function()
+    {
+        splitORDI(inscription, element)
+    }
+}
+
+function splitORDI(inscription, utxo)
+{
+    let input = new Array()
+    let totalvalue = utxo.value
+    let split = 0
+
+    input[0] = new Object()
+    input[0].txid = utxo.txid
+    input[0].index = utxo.vout
+    input[0].amount = utxo.value
+ 
+    if (totalvalue % 2)
+    {
+        split = (utxo.value - 1) / 2
+    }
+    else
+    {
+        split = (utxo.value - 2) / 2
+    }
+
+    litecoin.newMultiSigTransaction({
+        network: "normal",
+        witnessScript: _LWQ_SC_WALLET.witnessScript,
+        keys: [_LWQ_SC_WALLET.keys[0].wif, _LWQ_SC_WALLET.keys[1].wif],
+        signatures: 2,
+        utxo: input,
+        output: [
+        {
+            address: _LWQ_SC_WALLET.master,
+            amount: totalvalue - split
+        },
+        {
+            address: _LWQ_SC_WALLET.master,
+            amount: split - 500
+        }],
+        fee: 500
+    }).then(async function(data)
+    {
+        const weight = await getFee(data.rawTransaction)
+        let fee = parseInt(weight) + 1
+        
+        litecoin.newMultiSigTransaction({
+            network: "normal",
+            witnessScript: _LWQ_SC_WALLET.witnessScript,
+            keys: [_LWQ_SC_WALLET.keys[0].wif, _LWQ_SC_WALLET.keys[1].wif],
+            signatures: 2,
+            utxo: input,
+            output: [
+                {
+                    address: _LWQ_SC_WALLET.master,
+                    amount: totalvalue - split
+                },
+                {
+                    address: _LWQ_SC_WALLET.master,
+                    amount: split - fee
+                }],
+            fee: fee
+        }).then(async function(data)
+        {
+            submit(data.rawTransaction, _LWQ_SC_WALLET.master, input, "send ordi")
+        })
+    })
+}
+
+function createSendORDI(inscription, utxo, destination)
+{
+    let input = new Array()
+    let totalvalue = utxo.value
+
+    let input0 = new Object()
+    input0.txid = utxo.txid
+    input0.index = utxo.vout
+    input0.amount = utxo.value
+    input.push(input0)
+
+    litecoin.newMultiSigTransaction({
+        network: "normal",
+        witnessScript: _LWQ_SC_WALLET.witnessScript,
+        keys: [_LWQ_SC_WALLET.keys[0].wif, _LWQ_SC_WALLET.keys[1].wif],
+        signatures: 2,
+        utxo: input,
+        output: [
+        {
+            address: destination,
+            amount: totalvalue - 500
+        }],
+        fee: 500
+    }).then(async function(data)
+    {
+        const weight = await getFee(data.rawTransaction)
+        const fee = parseInt(weight) + 1
+        
+        litecoin.newMultiSigTransaction({
+            network: "normal",
+            witnessScript: _LWQ_SC_WALLET.witnessScript,
+            keys: [_LWQ_SC_WALLET.keys[0].wif, _LWQ_SC_WALLET.keys[1].wif],
+            signatures: 2,
+            utxo: input,
+            output: [
+                {
+                    address: destination,
+                    amount: totalvalue - fee
+                }],
+            fee: fee
+        }).then(async function(data)
+        {
+            submit(data.rawTransaction, destination, input, "send ordi")
+        })
+    })
+}
+
+async function displaylistDEX(token)
 {
     __hide()
     __LWQ_SC_DEX_LIST.style.display = "inline-block"
@@ -802,85 +1306,173 @@ function displaylistDEX(token)
         amount.innerHTML = "<br>Amount:<br>"
         amountinput.type = "number"
         amountinput.value = 1
-        desire.innerHTML = "<br>Desire in total:<br>"
+        desire.innerHTML = "<br>Desire per unit:<br>"
         desireinput.type = "number"
         desireinput.value = 0.001
         list.innerHTML = "List on DEX"
 
         amountinput.style.marginBottom = "1.37rem"
         list.classList.add("button-terminal")
-        list.onclick = function()
+        list.onclick = async function()
         {
-            url = LITECOINSPACE + "api/address/" + _LWQ_SC_WALLET.master + "/utxo"
-            fetch(url).then((response) => response.json()).then(function(utxo)
+            await getUTXOS()
+
+            let totalamount = 0
+            let fee = 255
+            let input = new Array()
+
+            // take one utxo with a value greater then 50k
+            for (let a = 0; a < _LWQ_SC_UTXO["cardinal"].length; a++)
             {
-                let totalamount = 0
-                let fee = 255
-                let input = new Array()
-
-                // take one utxo with a value greater then 50k
-                for (let a = 0; a < utxo.length; a++)
+                const element = _LWQ_SC_UTXO["cardinal"][a]
+                if (element.value > 50000)
                 {
-                    const element = utxo[a]
-                    if (element.value > 50000)
-                    {
-                        totalamount = element.value
+                    totalamount = element.value
 
-                        let obj = new Object()
-                        obj.txid = element.txid
-                        obj.index = element.vout
-                        obj.amount = element.value
-                        input.push(obj)
+                    let obj = new Object()
+                    obj.txid = element.txid
+                    obj.index = element.vout
+                    obj.amount = element.value
+                    input.push(obj)
 
-                        a = utxo.length
-                    }
+                    a = _LWQ_SC_UTXO["cardinal"].length
                 }
+            }
 
-                // create the raw transaction (client side)
-                litecoin.newMultiSigTransaction({
-                    network: "normal",
-                    witnessScript: _LWQ_SC_WALLET.witnessScript,
-                    keys: [_LWQ_SC_WALLET.keys[0].wif], // The transaction builder needs a private key or it runs into error -> this wont get used at this time
-                    signatures: 2,
-                    utxo: input,
-                    output: [
-                    {
-                        address: _LWQ_SC_WALLET.master,
-                        amount: totalamount - fee
-                    }],
-                    fee: fee
-                }).then(function(data)
+            // create the raw transaction (client side)
+            litecoin.newMultiSigTransaction({
+                network: "normal",
+                witnessScript: _LWQ_SC_WALLET.witnessScript,
+                keys: [_LWQ_SC_WALLET.keys[0].wif], // The transaction builder needs a private key or it runs into error -> this wont get used at this time
+                signatures: 2,
+                utxo: input,
+                output: [
                 {
-                    
-                    //(data.unsignedtx) // the prepared and unsigned transaction hex
+                    address: _LWQ_SC_WALLET.master,
+                    amount: totalamount - fee
+                }],
+                fee: fee
+            }).then(function(data)
+            {
 
-                    // send the raw transaction to liteworlds.quest to create and add the payload for omnilite operation/action (server side)
-                    url = LWQ_API + "public-payload-listdex&txid=" + data.unsignedtx + "&property=" + token["propertyid"] + "&amount=" + amountinput.value + "&desire=" + desireinput.value
-                    fetch(url).then((responce) => responce.json()).then
-                    (
-                        function(data)
+                const finDesire = (desireinput.value * amountinput.value).toFixed(8)
+                
+                //(data.unsignedtx) // the prepared and unsigned transaction hex
+
+                // send the raw transaction to liteworlds.quest to create and add the payload for omnilite operation/action (server side)
+                url = LWQ_API + "public-payload-listdex&txid=" + data.unsignedtx + "&property=" + token["propertyid"] + "&amount=" + amountinput.value + "&desire=" + finDesire
+                fetch(url).then((responce) => responce.json()).then
+                (
+                    function(data)
+                    {
+                        // sign the modified raw transaction step 1 (client side)
+                        litecoin.signPartialMultiSigTransaction({
+                            network: "normal",
+                            rawTransaction: data.txid,
+                            witnessScript: _LWQ_SC_WALLET.witnessScript,
+                            keys: [_LWQ_SC_WALLET.keys[0].wif],
+                            utxo: input,
+                            totalSignatures: 2,
+                            state: 'incomplete'
+                        }).then(function(data)
                         {
-                            // sign the modified raw transaction step 1 (client side)
-                            litecoin.signPartialMultiSigTransaction({
-                                network: "normal",
-                                rawTransaction: data.txid,
-                                witnessScript: _LWQ_SC_WALLET.witnessScript,
-                                keys: [_LWQ_SC_WALLET.keys[0].wif],
-                                utxo: input,
-                                totalSignatures: 2,
-                                state: 'incomplete'
-                            }).then(function(data)
-                            {
-                                sign(data.rawTransaction, _LWQ_SC_WALLET.master, input, "List DEX " + property + "#" + amountinput.value + "<br>for total " + desireinput.value + " LTC")
-                            })
-                        }
-                    )
-                })
+                            sign(data.rawTransaction, _LWQ_SC_WALLET.master, input, "List DEX " + property["propertyid"] + "#" + amountinput.value + "<br>for total " + finDesire + " LTC")
+                        })
+                    }
+                )
             })
         }
     })
 }
 
+function displaycancelDEX(token)
+{
+    __hide()
+    __LWQ_SC_DEX_LIST.style.display = "inline-block"
+    __LWQ_SC_DEX_LIST.innerHTML = ""
+
+    var url = LWQ_API + "public-get-property&property=" + token["propertyid"]
+    fetch(url).then((response) => response.json()).then(function(property)
+    {
+        const name = document.createElement("p")
+        const list = document.createElement("button")
+
+        __LWQ_SC_DEX_LIST.appendChild(name)
+        __LWQ_SC_DEX_LIST.appendChild(document.createElement("br"))
+        __LWQ_SC_DEX_LIST.appendChild(list)
+
+        name.innerHTML = token["amountavailable"] + " " + property["name"]
+        list.innerHTML = "Cancel Listing"
+        list.classList.add("button-terminal")
+        list.onclick = async function()
+        {
+            await getUTXOS()
+
+            let totalamount = 0
+            let fee = 255
+            let input = new Array()
+
+            // take one utxo with a value greater then 50k
+            for (let a = 0; a < _LWQ_SC_UTXO["cardinal"].length; a++)
+            {
+                const element = _LWQ_SC_UTXO["cardinal"][a]
+                if (element.value > 50000)
+                {
+                    totalamount = element.value
+
+                    let obj = new Object()
+                    obj.txid = element.txid
+                    obj.index = element.vout
+                    obj.amount = element.value
+                    input.push(obj)
+
+                    a = _LWQ_SC_UTXO["cardinal"].length
+                }
+            }
+
+            // create the raw transaction (client side)
+            litecoin.newMultiSigTransaction({
+                network: "normal",
+                witnessScript: _LWQ_SC_WALLET.witnessScript,
+                keys: [_LWQ_SC_WALLET.keys[0].wif], // The transaction builder needs a private key or it runs into error -> this wont get used at this time
+                signatures: 2,
+                utxo: input,
+                output: [
+                {
+                    address: _LWQ_SC_WALLET.master,
+                    amount: totalamount - fee
+                }],
+                fee: fee
+            }).then(function(data)
+            {
+                
+                //(data.unsignedtx) // the prepared and unsigned transaction hex
+
+                // send the raw transaction to liteworlds.quest to create and add the payload for omnilite operation/action (server side)
+                url = LWQ_API + "public-payload-listdex&txid=" + data.unsignedtx + "&property=" + token["propertyid"] + "&amount=0&desire=0&action=3"
+                fetch(url).then((responce) => responce.json()).then
+                (
+                    function(data)
+                    {
+                        // sign the modified raw transaction step 1 (client side)
+                        litecoin.signPartialMultiSigTransaction({
+                            network: "normal",
+                            rawTransaction: data.txid,
+                            witnessScript: _LWQ_SC_WALLET.witnessScript,
+                            keys: [_LWQ_SC_WALLET.keys[0].wif],
+                            utxo: input,
+                            totalSignatures: 2,
+                            state: 'incomplete'
+                        }).then(function(data)
+                        {
+                            sign(data.rawTransaction, _LWQ_SC_WALLET.master, input, "Cancel Listing " + property["propertyid"])
+                        })
+                    }
+                )
+            })
+        }
+    })
+}
 
 
 
@@ -953,6 +1545,57 @@ var _LWQ_SC_WALLET
 
 var locked = true
 
+
+
+function getPass()
+{
+    chrome.storage.local.get("LWQ_SC_PASSWD").then((local) =>
+    {
+        chrome.storage.session.get("LWQ_SC_PASSWD").then((session) =>
+        {
+            _LWQ_SC_PASSWD = local.LWQ_SC_PASSWD
+
+            if (_LWQ_SC_PASSWD === undefined)
+            {
+                createPasswd()
+            }
+            else if (session.LWQ_SC_PASSWD === undefined)
+            {
+                enterPasswd()
+            }
+            else if (_LWQ_SC_PASSWD === session.LWQ_SC_PASSWD)
+            {
+                locked = false
+                getSeed()
+                //port.postMessage({"function":"getSeed"})
+            }
+        })
+    })
+
+    
+}
+
+function getSeed()
+{
+    chrome.storage.local.get("LWQ_SC_MNEMONIC").then((local) =>
+    {
+        if (local.LWQ_SC_MNEMONIC === undefined)
+        {
+            displayMnemonicOptions()
+        }
+        else
+        {
+            _LWQ_SC_SEED = local.LWQ_SC_MNEMONIC
+            __init()
+        }
+    })
+}
+
+
+
+
+
+
 // opens a communication between scripts
 var port = chrome.runtime.connect()
 
@@ -998,73 +1641,6 @@ port.onMessage.addListener(function(o)
     }
 })
 
-function __init()
-{
-    if (_LWQ_SC_PASSWD === undefined)
-    {
-        port.postMessage({"function":"getPass"})
-    }
-
-    if (_LWQ_SC_SEED === undefined && _LWQ_SC_PASSWD !== undefined)
-    {
-        //port.postMessage({"function":"getSeed"})
-    }
-
-    try {
-        document.getElementById("CallTest").onclick() = function(data)
-        {
-            console.log(data)
-            testcall()
-        }
-    } catch (error) {
-        
-    }
-
-    if (!locked)
-    {
-        __LWQ_SC_NAV.style.display = "inline-block"
-        getWallet()
-    }
-}
-
-function test123()
-{
-    console.log("test")
-    throw "test"
-}
-
-
-
-function testcall()
-{
-    port.postMessage({"function":"getMaster"})
-}
-
-function getWallet()
-{
-    //let port = chrome.runtime.connect()
-    //console.log(port)
-
-    try {
-
-        litecoin.getMultiSigWallet(2, 2, "normal", _LWQ_SC_SEED, _LWQ_SC_PASSWD).then(function(Wallet)
-        {
-            _LWQ_SC_WALLET = Wallet
-            //console.log(Wallet)
-            //document.getElementById("LWQ_SC_WALLET_KEYS").onclick = function()
-            //{
-            //    document.getElementById("LWQ_SC_WALLET_OUTPUT").innerHTML = Wallet.keys[0].wif + "<br>" + Wallet.keys[1].wif
-            //}
-            //port.postMessage({"function":"setMaster", "master": Wallet.master})
-            getToken()
-            displayWallet()
-        })
-    } catch (error) {
-        console.log(error)
-
-        //port.postMessage({"function":"getMaster"})
-    }
-}
 
 function getToken()
 {
@@ -1085,7 +1661,7 @@ function getToken()
         {
             if (data.length == 0)
             {
-                __LWQ_SC_NFT.innerHTML = "No Data"
+                __LWQ_SC_NFTOMNI.innerHTML = "No Data"
             }
             else
             {
@@ -1146,142 +1722,131 @@ function getToken()
     )
 }
 
-function DEXaccept(propertyid, amount, destination)
+async function DEXaccept(propertyid, amount, destination)
 {
-    // request the utxo / unspent information data from litecoinspace.org
-    let url = LITECOINSPACE + "api/address/" + _LWQ_SC_WALLET.master + "/utxo"
-    fetch(url).then((responce) => responce.json()).then
-    (
-        function(utxo)
+    await getUTXOS()
+
+    let totalamount = 0
+    let sendingamount = 5460
+    let fee = 255
+    let input = new Array()
+
+    // take one utxo with a value greater then 50k
+    for (let a = 0; a < _LWQ_SC_UTXO["cardinal"].length; a++)
+    {
+        const element = _LWQ_SC_UTXO["cardinal"][a]
+        if (element.value > 50000)
         {
-            let totalamount = 0
-            let sendingamount = 5460
-            let fee = 255
-            let input = new Array()
+            totalamount = element.value
 
-            // take one utxo with a value greater then 50k
-            for (let a = 0; a < utxo.length; a++)
-            {
-                const element = utxo[a]
-                if (element.value > 50000)
-                {
-                    totalamount = element.value
+            let obj = new Object()
+            obj.txid = element.txid
+            obj.index = element.vout
+            obj.amount = element.value
+            input.push(obj)
 
-                    let obj = new Object()
-                    obj.txid = element.txid
-                    obj.index = element.vout
-                    obj.amount = element.value
-                    input.push(obj)
-
-                    a = utxo.length
-                }
-            }
-
-            // create the raw transaction (client side)
-            litecoin.newMultiSigTransaction({
-                network: "normal",
-                witnessScript: _LWQ_SC_WALLET.witnessScript,
-                keys: [_LWQ_SC_WALLET.keys[0].wif], // The transaction builder needs a private key or it runs into error -> this wont get used at this time
-                signatures: 2,
-                utxo: input,
-                output: [
-                {
-                    address: _LWQ_SC_WALLET.master,
-                    amount: totalamount - sendingamount - fee
-                },{
-                    address: destination,
-                    amount: sendingamount
-                }],
-                fee: fee
-            }).then(function(data)
-            {
-                //(data.unsignedtx) // the prepared and unsigned transaction hex
-
-                // send the raw transaction to liteworlds.quest to create and add the payload for omnilite operation/action (server side)
-                let url = LWQ_API + "public-payload-dex-accept&txid=" + data.unsignedtx + "&property=" + propertyid + "&amount=" + amount
-                fetch(url).then((responce) => responce.json()).then
-                (
-                    function(data)
-                    {
-                        // sign the modified raw transaction step 1 (client side)
-                        litecoin.signPartialMultiSigTransaction({
-                            network: "normal",
-                            rawTransaction: data.txid,
-                            witnessScript: _LWQ_SC_WALLET.witnessScript,
-                            keys: [_LWQ_SC_WALLET.keys[0].wif],
-                            utxo: input,
-                            totalSignatures: 2,
-                            state: 'incomplete'
-                        }).then(function(data)
-                        {
-                            sign(data.rawTransaction, destination, input, "DEX accept offer " + propertyid + "#" + amount)
-                        })
-                    }
-                )
-            })
+            a = _LWQ_SC_UTXO["cardinal"].length
         }
-    )
+    }
+
+    // create the raw transaction (client side)
+    litecoin.newMultiSigTransaction({
+        network: "normal",
+        witnessScript: _LWQ_SC_WALLET.witnessScript,
+        keys: [_LWQ_SC_WALLET.keys[0].wif], // The transaction builder needs a private key or it runs into error -> this wont get used at this time
+        signatures: 2,
+        utxo: input,
+        output: [
+        {
+            address: _LWQ_SC_WALLET.master,
+            amount: totalamount - sendingamount - fee
+        },{
+            address: destination,
+            amount: sendingamount
+        }],
+        fee: fee
+    }).then(function(data)
+    {
+        //(data.unsignedtx) // the prepared and unsigned transaction hex
+
+        // send the raw transaction to liteworlds.quest to create and add the payload for omnilite operation/action (server side)
+        let url = LWQ_API + "public-payload-dex-accept&txid=" + data.unsignedtx + "&property=" + propertyid + "&amount=" + amount
+        fetch(url).then((responce) => responce.json()).then
+        (
+            function(data)
+            {
+                // sign the modified raw transaction step 1 (client side)
+                litecoin.signPartialMultiSigTransaction({
+                    network: "normal",
+                    rawTransaction: data.txid,
+                    witnessScript: _LWQ_SC_WALLET.witnessScript,
+                    keys: [_LWQ_SC_WALLET.keys[0].wif],
+                    utxo: input,
+                    totalSignatures: 2,
+                    state: 'incomplete'
+                }).then(function(data)
+                {
+                    sign(data.rawTransaction, destination, input, "DEX accept offer " + propertyid + "#" + amount)
+                })
+            }
+        )
+    })
 }
 
-function DEXpay(destination, amount)
+async function DEXpay(destination, amount)
 {
     amount = parseInt((parseFloat(amount) * 100000000).toFixed(8))
-    // request the utxo / unspent information data from litecoinspace.org
-    let url = LITECOINSPACE + "api/address/" + _LWQ_SC_WALLET.master + "/utxo"
-    fetch(url).then((responce) => responce.json()).then
-    (
-        function(utxo)
+
+    await getUTXOS()
+
+    let totalamount = 0
+    let sendingamount = amount
+    let loshan = 5460
+    let fee = 255
+    let input = new Array()
+
+    // take one utxo with a value greater then 50k
+    for (let a = 0; a < _LWQ_SC_UTXO["cardinal"].length; a++)
+    {
+        const element = _LWQ_SC_UTXO["cardinal"][a]
+        if (element.value > (amount + loshan + fee))
         {
-            let totalamount = 0
-            let sendingamount = amount
-            let loshan = 5460
-            let fee = 255
-            let input = new Array()
+            totalamount = element.value
 
-            // take one utxo with a value greater then 50k
-            for (let a = 0; a < utxo.length; a++)
-            {
-                const element = utxo[a]
-                if (element.value > (amount + loshan + fee))
-                {
-                    totalamount = element.value
+            let obj = new Object()
+            obj.txid = element.txid
+            obj.index = element.vout
+            obj.amount = element.value
+            input.push(obj)
 
-                    let obj = new Object()
-                    obj.txid = element.txid
-                    obj.index = element.vout
-                    obj.amount = element.value
-                    input.push(obj)
-
-                    a = utxo.length
-                }
-            }
-
-            // create the raw transaction (client side)
-            litecoin.newMultiSigTransaction({
-                network: "normal",
-                witnessScript: _LWQ_SC_WALLET.witnessScript,
-                keys: [_LWQ_SC_WALLET.keys[0].wif], // The transaction builder needs a private key or it runs into error -> this wont get used at this time
-                signatures: 2,
-                utxo: input,
-                output: [
-                {
-                    address: _LWQ_SC_WALLET.master,
-                    amount: totalamount - sendingamount - fee - loshan
-                },
-                {
-                    address: "LTceXoduS2cetpWJSe47M25i5oKjEccN1h",
-                    amount: loshan
-                },
-                {
-                    address: destination,
-                    amount: sendingamount
-                }],
-                fee: fee
-            }).then(function(data){
-                sign(data.rawTransaction, destination, input, "pay DEX request")
-            })
+            a = _LWQ_SC_UTXO["cardinal"].length
         }
-    )
+    }
+
+    // create the raw transaction (client side)
+    litecoin.newMultiSigTransaction({
+        network: "normal",
+        witnessScript: _LWQ_SC_WALLET.witnessScript,
+        keys: [_LWQ_SC_WALLET.keys[0].wif], // The transaction builder needs a private key or it runs into error -> this wont get used at this time
+        signatures: 2,
+        utxo: input,
+        output: [
+        {
+            address: _LWQ_SC_WALLET.master,
+            amount: totalamount - sendingamount - fee - loshan
+        },
+        {
+            address: "LTceXoduS2cetpWJSe47M25i5oKjEccN1h",
+            amount: loshan
+        },
+        {
+            address: destination,
+            amount: sendingamount
+        }],
+        fee: fee
+    }).then(function(data){
+        sign(data.rawTransaction, destination, input, "pay DEX request")
+    })
 }
 
 
@@ -1551,6 +2116,9 @@ function enterMnemonicSeed()
         td2.appendChild(input1)
         td4.appendChild(input2)
 
+        input1.autocomplete = "off"
+        input2.autocomplete = "off"
+
         td1.innerHTML = a +a +1
         td3.innerHTML = a +a +2
 
@@ -1602,7 +2170,8 @@ function validateSeed()
             setTimeout(function()
             {
                 document.getElementById("LWQ_SC_mnemonic_enter").style.display = "none"
-                port.postMessage({"function":"getPass"})
+                //port.postMessage({"function":"getPass"})
+                getPass()
             }, 500)
             
         }
@@ -2035,54 +2604,108 @@ function sign(txid, destination, input, action)
 {
     __hide()
 
+    __LWQ_SC_SIGN.style.display = "inline-block"
+    document.getElementById("LWQ_SC_SIGN_txid").innerHTML = "TXID<br>" + txid.substring(0,10) + "..." + txid.substring((txid.length - 10), txid.length)
+    document.getElementById("LWQ_SC_SIGN_amount").innerHTML = "Amount<br>" + input[0].amount + " lits"
+    document.getElementById("LWQ_SC_SIGN_destination").innerHTML = "Destination<br>" + destination
+    document.getElementById("LWQ_SC_SIGN_omnilite").innerHTML = "Omnilite Action<br>" + action
+    document.getElementById("LWQ_SC_SIGN_button").onclick = function()
+    {
+        document.getElementById("LWQ_SC_SIGN_button").remove()
+
+        litecoin.signPartialMultiSigTransaction({
+            network: "normal",
+            rawTransaction: txid,
+            witnessScript: _LWQ_SC_WALLET.witnessScript,
+            keys: [_LWQ_SC_WALLET.keys[1].wif],
+            utxo: input,
+            totalSignatures: 2,
+            state: 'incomplete'
+        }).then(function(data)
+        {
+            // submit to mempool
+            let url = "https://v2.liteworlds.quest/mempool-submit.php"
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data.rawTransaction)
+            }).then((responce) => responce.json()).then
+            (
+                function(data)
+                {
+                    const done = document.createElement("button")
+                    done.classList.add("button-terminal")
+                    done.innerText = "Done - back to Wallet"
+                    done.onclick = function()
+                    {
+                        __LWQ_SC_NAV.value = "Wallet"
+                        getWallet()
+                    }
+
+                    const show = document.createElement("button")
+                    show.innerText = "Show on LitecoinSpace"
+                    show.classList.add("button-terminal")
+                    show.onclick = function()
+                    {
+                        const a = document.createElement("a")
+                        a.target = "_blank"
+                        a.rel = "noopener noreferrer"
+                        a.href = "https://litecoinspace.org/tx/" + data.txid
+                        a.click()
+                    }
+
+                    document.getElementById("LWQ_SC_SIGN_output").appendChild(done)
+                    document.getElementById("LWQ_SC_SIGN_output").appendChild(show)
+                }
+            )
+        })
+    }
+
     try
     {
-        __LWQ_SC_SIGN.style.display = "inline-block"
-        document.getElementById("LWQ_SC_SIGN_txid").innerHTML = "TXID<br>" + txid.substring(0,10) + "..." + txid.substring((txid.length - 10), txid.length)
-        document.getElementById("LWQ_SC_SIGN_amount").innerHTML = "Amount<br>" + input[0].amount + " lits"
-        document.getElementById("LWQ_SC_SIGN_destination").innerHTML = "Destination<br>" + destination
-        document.getElementById("LWQ_SC_SIGN_omnilite").innerHTML = "Omnilite Action<br>" + action
-        document.getElementById("LWQ_SC_SIGN_button").onclick = function()
-        {
-            litecoin.signPartialMultiSigTransaction({
-                network: "normal",
-                rawTransaction: txid,
-                witnessScript: _LWQ_SC_WALLET.witnessScript,
-                keys: [_LWQ_SC_WALLET.keys[1].wif],
-                utxo: input,
-                totalSignatures: 2,
-                state: 'incomplete'
-            }).then(function(data)
-            {
-                //throw data.rawTransaction
-                // submit to mempool
-                let url = "https://v2.liteworlds.quest/mempool-submit.php"
-                fetch(url, {
-                    method: "POST",
-                    headers: {
-                        "Accept": "application/json",
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(data.rawTransaction)
-                }).then((responce) => responce.json()).then
-                (
-                    function(data)
-                    {
-                        document.getElementById("LWQ_SC_SIGN_output").innerHTML = "<a style=\"text-decoration: none; color: #4AF626\" target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://litecoinspace.org/tx/" + data.txid + "\">" + data.answer + " <br>Click here to see your Transaction</a>"
-                        setTimeout(function(){
-                            document.getElementById("LWQ_SC_SIGN_output").innerHTML = ""
-                            getWallet()
-                        }, 5000)
-                    }
-                )
-            })
-        }
+        
     }
     catch (error)
     {
         
     }
 }
+
+function submit(txid, destination, input, action)
+{
+    __hide()
+
+    __LWQ_SC_SIGN.style.display = "inline-block"
+    document.getElementById("LWQ_SC_SIGN_txid").innerHTML = "TXID<br>" + txid.substring(0,10) + "..." + txid.substring((txid.length - 10), txid.length)
+    document.getElementById("LWQ_SC_SIGN_amount").innerHTML = "Amount<br>" + input[0].amount + " lits"
+    document.getElementById("LWQ_SC_SIGN_destination").innerHTML = "Destination<br>" + destination
+    document.getElementById("LWQ_SC_SIGN_omnilite").innerHTML = "Omnilite Action<br>" + action
+    document.getElementById("LWQ_SC_SIGN_button").onclick = function()
+    {
+        //throw data.rawTransaction
+        // submit to mempool
+        let url = "https://v2.liteworlds.quest/mempool-submit.php"
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(txid)
+        }).then((response) => response.json()).then
+        (
+            function(data)
+            {
+                document.getElementById("LWQ_SC_SIGN_output").innerHTML = "<a style=\"text-decoration: none; color: #4AF626\" target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://litecoinspace.org/tx/" + data.txid + "\">" + data.answer + " <br>Click here to see your Transaction</a>"   
+            }
+        )
+    }
+}
+
+
 
 
 __init()
