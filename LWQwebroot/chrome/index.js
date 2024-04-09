@@ -1,6 +1,6 @@
 const LITECOINSPACE = "https://litecoinspace.org/"
-const ORD_CONTENT = "http://ordi.liteworlds.quest/content/"
-const ORD_TX = "http://ordi.liteworlds.quest/output/"
+const ORD_CONTENT = "http://ordinalslite.com/content/"
+const ORD_TX = "https://ordinalslite.com/output/"
 const IPFS = "https://ipfs.io/ipfs/"
 const LWQ_API = "https://v2.liteworlds.quest/?method="
 
